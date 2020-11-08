@@ -18,7 +18,7 @@ _L['areasCities'] = S{"Ru'Lude Gardens","Upper Jeuno","Lower Jeuno","Port Jeuno"
 ---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- set cycle toggles
 -- these can be named whatever you want, just make sure you use the same names in your sets
-_L['Idle-Modes'] = { 'Normal','DT' };
+_L['Idle-Modes'] = { 'Regain','Normal','DT' };
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid","DT" };
 _L['Weapon-Modes'] = { "Caladbolg","Anguta", };
 
@@ -255,7 +255,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands={ name="Leyline Gloves", augments={'Accuracy+15','Mag. Acc.+15','"Mag.Atk.Bns."+15','"Fast Cast"+3',}},
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Flam. Gambieras +2",
 								neck="Loricate Torque +1",
@@ -271,7 +271,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Hjarrandi Helm",
 								body="Hjarrandi Breast.",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Sulev. Leggings +2",
 								neck="Warder's Charm +1",
@@ -282,14 +282,32 @@ windower.send_command('input //gs org')
 								right_ring="Moonlight Ring",
 								back={ name="Ankou's Mantle", augments={'INT+20','Eva.+20 /Mag. Eva.+20','INT+10','"Fast Cast"+10',}},
 								};
+	sets['Regain'] = {						--506meva   26mdb  35dt  48pdt  52mdt  35bdt
+								ammo="Staunch Tathlum +1",
+								head="Volte Salade",
+								body="Makora Meikogai",
+								hands="Volte Moufles",
+								legs="Sulev. Cuisses +2",
+								feet="Flam. Gambieras +2",
+								neck="Loricate Torque +1",
+								waist="Asklepian Belt",
+								left_ear="Sanare Earring",
+								right_ear="Eabani Earring",
+								left_ring="Moonlight Ring",
+								right_ring="Defending Ring",
+								back={ name="Ankou's Mantle", augments={'INT+20','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','Haste+10','Damage taken-5%',}},
+								};							
+								
 	sets['Idle']={}
 	sets['Idle']['Caladbolg'] = {main="Caladbolg", sub="Utu Grip",}
-	sets['Idle']['Caladbolg']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Caladbolg'] ,{})
-	sets['Idle']['Caladbolg']['DT'] = set_combine(sets['DT'],sets['Idle']['Caladbolg'] ,{})
+	sets['Idle']['Caladbolg']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Caladbolg'] ,{main="Caladbolg", sub="Utu Grip",})
+	sets['Idle']['Caladbolg']['DT'] = set_combine(sets['DT'],sets['Idle']['Caladbolg'] ,{main="Caladbolg", sub="Utu Grip",})
+	sets['Idle']['Caladbolg']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Caladbolg'] ,{main="Caladbolg", sub="Utu Grip",})
 	
 	sets['Idle']['Anguta'] = {main="Anguta", sub="Utu Grip",}
-	sets['Idle']['Anguta']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Anguta'] ,{})
-	sets['Idle']['Anguta']['DT'] = set_combine(sets['DT'],sets['Idle']['Anguta'] ,{})
+	sets['Idle']['Anguta']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Anguta'] ,{main="Anguta", sub="Utu Grip",})
+	sets['Idle']['Anguta']['DT'] = set_combine(sets['DT'],sets['Idle']['Anguta'] ,{main="Anguta", sub="Utu Grip",})
+	sets['Idle']['Anguta']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Anguta'] ,{main="Anguta", sub="Utu Grip",})
 	--Engaged Sets--
 	
 	sets['Engaged'] = {};
@@ -341,7 +359,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Flam. Gambieras +2",
 								neck="Abyssal Beads +2",
@@ -359,7 +377,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Flam. Gambieras +2",
 								neck="Loricate Torque +1",
@@ -699,7 +717,7 @@ sets['midcast']['Dark Magic']['Aspir'] = sets['midcast']['Dark Magic']['Drain II
 								hands="Ratri Gadlings",
 								legs="Ratri Cuisses",
 								feet="Ratri Sollerets",
-								neck="Sanctity Necklace",
+								neck="Unmoving Collar +1",
 								waist="Eschan Stone",
 								left_ear="Odnowa Earring",
 								right_ear="Odnowa Earring +1",

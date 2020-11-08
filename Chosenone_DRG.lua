@@ -577,7 +577,7 @@ windower.send_command('input //gs org')
 	sets['WeaponSkill']['Stardiver']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Stardiver'], { left_ear="Lugra Earring +1",});
 	sets['WeaponSkill']['Impulse Drive'] = {					
 								ammo="Knobkierrie",
-								head="Flam. Zucchetto +2",
+								head="Blistering Sallet +1",
 								body={ name="Valorous Mail", augments={'Accuracy+25 Attack+25','"Dbl.Atk."+4','STR+9','Accuracy+7','Attack+8',}},
 								hands="Flam. Manopolas +2",
 								legs={ name="Valor. Hose", augments={'Accuracy+22 Attack+22','"Store TP"+7','AGI+2','Accuracy+9','Attack+8',}},

@@ -398,22 +398,7 @@ windower.send_command('input //gs org')
 	
 	--Precast--
 	
-	sets['precast'] = {			
-								
-								ammo="Impatiens",
-								head={ name="Merlinic Hood", augments={'"Fast Cast"+6','Mag. Acc.+1',}},
-								body="Zendik Robe",
-								hands="Bagua Mitaines +1",
-								legs="Geomancy Pants +3",
-								feet={ name="Merlinic Crackows", augments={'"Mag.Atk.Bns."+2','"Fast Cast"+7','MND+6','Mag. Acc.+3',}},
-								neck="Orunmila's Torque",
-								waist="Witful Belt",
-								left_ear="Enchntr. Earring +1",
-								right_ear="Etiolation Earring",
-								left_ring="Weather. Ring +1",
-								right_ring="Kishar Ring",
-								back={ name="Nantosuelta's Cape", augments={'MP+60','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','"Fast Cast"+10','Spell interruption rate down-10%',}},
-								};
+	
 								
 	sets['precast'] = {			
 								main="Daybreak",
@@ -435,12 +420,7 @@ windower.send_command('input //gs org')
 	
 	
 	sets['precast']['Holy Water'] = sets['DT'];
-	-- sets['precast']['Item']['Holy Water'] = {
-								-- ring1="Purity Ring",
-								-- ring2="Saida Ring",
-								-- waist="Gishdubar Sash",
-								-- legs="Shabti Cuisses +1",
-								-- };
+	
 	--Midcast--
 	
 	sets['midcast'] = {};
@@ -468,7 +448,7 @@ windower.send_command('input //gs org')
 								body="Zendik Robe",
 								hands={ name="Telchine Gloves", augments={'Pet: DEF+20','Pet: "Regen"+2','Pet: Damage taken -4%',}},
 								legs="Geomancy Pants +3",
-								feet={ name="Merlinic Crackows", augments={'"Mag.Atk.Bns."+2','"Fast Cast"+7','MND+6','Mag. Acc.+3',}},
+								feet="Medium's Sabots",
 								neck="Incanter's Torque",
 								waist="Gishdubar Sash",
 								left_ear="Regal Earring",
@@ -497,9 +477,14 @@ windower.send_command('input //gs org')
 								right_ring="Metamor. Ring +1",
 								back={ name="Nantosuelta's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','"Mag.Atk.Bns."+10','Spell interruption rate down-10%',}},
 								};	
+								
+	sets['midcast']['Enfeebling Magic']['Dispelga'] = set_combine(sets['midcast']['Enfeebling Magic'],{
+								main="Daybreak",
+								body="Cohort Cloak +1",
+								});							
+								
 	
-	
-	sets['midcast']['BlackMagic'] = {
+	sets['midcast']['Elemental Magic'] = {
 								main="Maxentius",
 								ammo="Pemphredo Tathlum",
 								body="Cohort Cloak +1",
@@ -514,6 +499,8 @@ windower.send_command('input //gs org')
 								right_ring="Metamor. Ring +1",
 								back={ name="Nantosuelta's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','"Mag.Atk.Bns."+10','Spell interruption rate down-10%',}},
 								};
+								
+	
 	sets['midcast']['Dark Magic']={}					
 	sets['midcast']['Dark Magic']['Aspir'] = {
 								main="Maxentius",
@@ -530,10 +517,7 @@ windower.send_command('input //gs org')
 								right_ring="Evanescence Ring",
 								back={ name="Nantosuelta's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','"Mag.Atk.Bns."+10','Spell interruption rate down-10%',}},
 								}	
-	sets['midcast']['Dark Magic']['Dispelga'] = set_combine(sets['midcast']['Enfeebling Magic'],{
-								main="Daybreak",
-								body="Cohort Cloak +1",
-								});
+	
 								
 	sets['midcast']['Dark Magic']['Aspir II'] = sets['midcast']['Dark Magic']['Aspir']							
 	sets['midcast']['Dark Magic']['Aspir III'] = sets['midcast']['Dark Magic']['Aspir']
@@ -542,13 +526,13 @@ windower.send_command('input //gs org')
 								main="Idris",
 								range={ name="Dunna", augments={'MP+20','Mag. Acc.+10','"Fast Cast"+3',}},
 								head="Azimuth Hood +1",
-								body="Bagua Tunic +1",
+								body="Vedic Coat",
 								hands="Geo. Mitaines +3",
 								legs="Bagua Pants +1",
-								feet="Azimuth Gaiters +1",
+								feet="Medium's Sabots",
 								neck="Bagua Charm +2",
 								waist="Austerity Belt +1",
-								left_ear="Enchntr. Earring +1",
+								left_ear="Mendi. Earring",
 								right_ear="Etiolation Earring",
 								left_ring="Stikini Ring",
 								right_ring="Stikini Ring",
@@ -971,12 +955,11 @@ function aftercast(spell)
 			_L['EntrustSpell'] = spell.english
 			_L['EntrustPerson'] = spell.target.name
 			_L['EntrustActive'] = false
-			_L['EntrustActive'] = true
 			windower.send_command('wait 307;input //gs c ResetEntrust')
 		end	
 		
-		if spell.interrupted then
-			_L['EntrustActive'] = false
+		if spell.interrupted and spell.english:startswith('Indi-') and buffactive['Entrust'] then
+			_L['EntrustActive'] = true
 		end
 		
 end

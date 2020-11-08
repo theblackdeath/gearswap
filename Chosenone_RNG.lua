@@ -275,7 +275,7 @@ windower.send_command('input //gs org')
 	sets['Idle']['Gastraphetes']['DT'] = set_combine(sets['DT'],sets['Idle']['Gastraphetes'] ,{})
 	
 	sets['Idle']['Fomalhaut'] = {
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
@@ -284,7 +284,7 @@ windower.send_command('input //gs org')
 	sets['Idle']['Fomalhaut']['DT'] = set_combine(sets['DT'],sets['Idle']['Fomalhaut'] ,{})
 	
 	sets['Idle']['Armageddon'] = {
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",
@@ -390,7 +390,7 @@ windower.send_command('input //gs org')
 	sets['Engaged']['Fomalhaut'] = {}
 
 	sets['Engaged']['Fomalhaut']['Normal'] = {	
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
@@ -413,7 +413,7 @@ windower.send_command('input //gs org')
 								
 	
 	sets['Engaged']['Fomalhaut']['Accuracy'] = {					
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
@@ -432,7 +432,7 @@ windower.send_command('input //gs org')
 								};
 	
 	sets['Engaged']['Fomalhaut']['Hybrid'] = {						
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
@@ -451,7 +451,7 @@ windower.send_command('input //gs org')
 								};
 								
 	sets['Engaged']['Fomalhaut']['DT'] = {						
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
@@ -470,7 +470,7 @@ windower.send_command('input //gs org')
 								};
 	sets['Engaged']['Armageddon'] = {}
 	sets['Engaged']['Armageddon']['Normal'] = {	
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",
@@ -490,7 +490,7 @@ windower.send_command('input //gs org')
 									
 	
 	sets['Engaged']['Armageddon']['Accuracy'] = {						
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",
@@ -509,7 +509,7 @@ windower.send_command('input //gs org')
 								};
 	
 	sets['Engaged']['Armageddon']['Hybrid'] = {				
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",
@@ -528,7 +528,7 @@ windower.send_command('input //gs org')
 								};
 								
 	sets['Engaged']['Armageddon']['DT'] = {					
-								main="Perun +1",
+								main="Kustawi +1",
 								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",

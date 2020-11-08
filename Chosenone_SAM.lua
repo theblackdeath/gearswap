@@ -18,7 +18,7 @@ _L['areasCities'] = S{"Ru'Lude Gardens","Upper Jeuno","Lower Jeuno","Port Jeuno"
 ---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- set cycle toggles
 -- these can be named whatever you want, just make sure you use the same names in your sets
-_L['Idle-Modes'] = { 'Normal','DT' };
+_L['Idle-Modes'] = { 'Regain','Normal','DT' };
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid","DT" };
 _L['Weapon-Modes'] = { "Masamune","Dojikiri Yasutsuna","Kogarasumaru","Shining One","Soboro Sukehiro","Quint Spear", };
 
@@ -198,7 +198,6 @@ _L['status_change_delay'] = 2.5;
 -- Called once on load. Used to define variables, and specifically sets
 function get_sets()
 windower.send_command('input //gs org')
-	windower.send_command('input /lockstyleset 9')
 	-- Sets are named in a very specific way to allow generic rules. The entire gearswap is controlled by the naming convention of the sets. 
 	-- This allows us to easily add in additional weapons, weapon skills, job abilities etc without needing to add new logic for equip swaps.
 	-- All that needs to be done is have the sets named correctly. 
@@ -249,7 +248,7 @@ windower.send_command('input //gs org')
 	sets['Normal'] = {
 								ammo="Staunch Tathlum +1",
 								head="Wakido Kabuto +3",
-								body="Wakido Domaru +3",
+								body="Makora Meikogai",
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
@@ -276,31 +275,52 @@ windower.send_command('input //gs org')
 								right_ring="Chirich Ring",
 								back="Moonbeam Cape",
 								}
+	sets['Regain'] = {					-- 
+								ammo="Staunch Tathlum +1",
+								head="Wakido Kabuto +3",
+								body="Makora Meikogai",
+								hands="Ken. Tekko",
+								legs="Ken. Hakama +1",
+								feet="Ken. Sune-Ate +1",
+								neck="Loricate Torque +1",
+								waist="Flume Belt +1",
+								left_ear="Genmei Earring",
+								right_ear="Merman's Earring",
+								left_ring="Defending Ring",
+								right_ring="Chirich Ring",
+								back="Moonbeam Cape",
+								}							
 	sets['Idle'] = {};
 	
 	sets['Idle']['Masamune'] = {main="Masamune", sub="Utu Grip",}
-	sets['Idle']['Masamune']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Masamune'] ,{})
-	sets['Idle']['Masamune']['DT'] = set_combine(sets['DT'],sets['Idle']['Masamune'] ,{})
+	sets['Idle']['Masamune']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Masamune'] ,{main="Masamune", sub="Utu Grip",})
+	sets['Idle']['Masamune']['DT'] = set_combine(sets['DT'],sets['Idle']['Masamune'] ,{main="Masamune", sub="Utu Grip",})
+	sets['Idle']['Masamune']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Masamune'] ,{main="Masamune", sub="Utu Grip",})
 	
 	sets['Idle']['Dojikiri Yasutsuna'] = {main="Dojikiri Yasutsuna", sub="Utu Grip",}
-	sets['Idle']['Dojikiri Yasutsuna']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Dojikiri Yasutsuna'] ,{})
-	sets['Idle']['Dojikiri Yasutsuna']['DT'] = set_combine(sets['DT'],sets['Idle']['Dojikiri Yasutsuna'] ,{})
+	sets['Idle']['Dojikiri Yasutsuna']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Dojikiri Yasutsuna'] ,{main="Dojikiri Yasutsuna", sub="Utu Grip",})
+	sets['Idle']['Dojikiri Yasutsuna']['DT'] = set_combine(sets['DT'],sets['Idle']['Dojikiri Yasutsuna'] ,{main="Dojikiri Yasutsuna", sub="Utu Grip",})
+	sets['Idle']['Dojikiri Yasutsuna']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Dojikiri Yasutsuna'] ,{main="Dojikiri Yasutsuna", sub="Utu Grip",})
 	
-	sets['Idle']['Kogarasumaru'] = {}
+	sets['Idle']['Kogarasumaru'] = {main="Kogarasumaru", sub="Utu Grip",}
 	sets['Idle']['Kogarasumaru']['Normal'] = set_combine(sets['Normal'] ,{main="Kogarasumaru", sub="Utu Grip",})
 	sets['Idle']['Kogarasumaru']['DT'] = set_combine(sets['DT'] ,{main="Kogarasumaru", sub="Utu Grip",})
+	sets['Idle']['Kogarasumaru']['Regain'] = set_combine(sets['Regain'] ,{main="Kogarasumaru", sub="Utu Grip",})
 	
 	sets['Idle']['Quint Spear'] = {main="Quint Spear", sub="Utu Grip",}
-	sets['Idle']['Quint Spear']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Quint Spear'] ,{})
-	sets['Idle']['Quint Spear']['DT'] = set_combine(sets['DT'],sets['Idle']['Quint Spear'] ,{})
+	sets['Idle']['Quint Spear']['Normal'] = set_combine(sets['Normal'],sets['Idle'] ,{main="Quint Spear", sub="Utu Grip",})
+	sets['Idle']['Quint Spear']['DT'] = set_combine(sets['DT'],sets['Idle'] ,{main="Quint Spear", sub="Utu Grip",})
+	sets['Idle']['Quint Spear']['Regain'] = set_combine(sets['DT'],sets['Idle'] ,{main="Quint Spear", sub="Utu Grip",})
 	
 	sets['Idle']['Shining One'] = {main="Shining One", sub="Utu Grip",}
-	sets['Idle']['Shining One']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Shining One'] ,{})
-	sets['Idle']['Shining One']['DT'] = set_combine(sets['DT'], sets['Idle']['Shining One'] ,{})
+	sets['Idle']['Shining One']['Normal'] = set_combine(sets['Idle']['Shining One'],sets['Normal'],{main="Shining One", sub="Utu Grip",})
+	sets['Idle']['Shining One']['DT'] = set_combine(sets['DT'], sets['Idle'] ,{main="Shining One", sub="Utu Grip",})
+	sets['Idle']['Shining One']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Shining One'] ,{main="Shining One", sub="Utu Grip",})
 	
 	sets['Idle']['Soboro Sukehiro'] = {main="Soboro Sukehiro", sub="Utu Grip",}
-	sets['Idle']['Soboro Sukehiro']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Soboro Sukehiro'] ,{})
-	sets['Idle']['Soboro Sukehiro']['DT'] = set_combine(sets['DT'], sets['Idle']['Soboro Sukehiro'] ,{})
+	sets['Idle']['Soboro Sukehiro']['Normal'] = set_combine(sets['Normal'],sets['Idle'] ,{main="Soboro Sukehiro", sub="Utu Grip",})
+	sets['Idle']['Soboro Sukehiro']['DT'] = set_combine(sets['DT'], sets['Idle'] ,{main="Soboro Sukehiro", sub="Utu Grip",})
+	sets['Idle']['Soboro Sukehiro']['Regain'] = set_combine(sets['DT'], sets['Idle'] ,{main="Soboro Sukehiro", sub="Utu Grip",})
 	
 	--Engaged Sets--
 	
@@ -314,13 +334,13 @@ windower.send_command('input //gs org')
 								ammo="Aurgelmir Orb +1",
 								head="Flam. Zucchetto +2",
 								body="Ken. Samue +1",
-								hands="Ken. Tekko",
+								hands="Wakido Kote +3",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -335,13 +355,13 @@ windower.send_command('input //gs org')
 								ammo="Aurgelmir Orb +1",
 								head="Flam. Zucchetto +2",
 								body="Ken. Samue +1",
-								hands="Ken. Tekko",
+								hands="Wakido Kote +3",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Chirich Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -355,7 +375,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -390,13 +410,13 @@ windower.send_command('input //gs org')
 								ammo="Aurgelmir Orb +1",
 								head="Flam. Zucchetto +2",
 								body="Ken. Samue +1",
-								hands="Ken. Tekko",
+								hands="Wakido Kote +3",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -411,13 +431,13 @@ windower.send_command('input //gs org')
 								ammo="Aurgelmir Orb +1",
 								head="Flam. Zucchetto +2",
 								body="Ken. Samue +1",
-								hands="Ken. Tekko",
+								hands="Wakido Kote +3",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Chirich Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -432,7 +452,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -471,10 +491,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -495,10 +515,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Chirich Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -513,7 +533,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -550,10 +570,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -571,10 +591,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Chirich Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -589,7 +609,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -628,10 +648,10 @@ windower.send_command('input //gs org')
 								hands={ name="Valorous Mitts", augments={'Accuracy+23 Attack+23','"Store TP"+8','DEX+4','Accuracy+12',}},
 								legs="Wakido Haidate +3",
 								feet={ name="Sak. Sune-Ate +3", augments={'Enhances "Meikyo Shisui" effect',}},
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -649,10 +669,10 @@ windower.send_command('input //gs org')
 								hands={ name="Valorous Mitts", augments={'Accuracy+23 Attack+23','"Store TP"+8','DEX+4','Accuracy+12',}},
 								legs="Wakido Haidate +3",
 								feet={ name="Sak. Sune-Ate +3", augments={'Enhances "Meikyo Shisui" effect',}},
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -665,7 +685,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -700,10 +720,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Petrov Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -718,10 +738,10 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Telos Earring",
-								right_ear="Cessance Earring",
+								right_ear="Balder Earring +1",
 								left_ring="Niqmaddu Ring",
 								right_ring="Chirich Ring",
 								back={ name="Smertrios's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','"Dbl.Atk."+10',}},
@@ -736,7 +756,7 @@ windower.send_command('input //gs org')
 								hands="Ken. Tekko",
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
-								neck="Moonbeam Nodowa",
+								neck="Sam. Nodowa +1",
 								waist="Sailfi Belt +1",
 								left_ear="Genmei Earring",
 								right_ear="Etiolation Earring",
@@ -769,7 +789,7 @@ windower.send_command('input //gs org')
 	sets['WeaponSkill'] = {
 								ammo="Knobkierrie",
 								head="Flam. Zucchetto +2",
-								body={ name="Valorous Mail", augments={'Accuracy+10','"Mag.Atk.Bns."+17','Weapon skill damage +9%','Accuracy+17 Attack+17','Mag. Acc.+8 "Mag.Atk.Bns."+8',}},
+								body="Sakonji Domaru +3",
 								hands={ name="Valorous Mitts", augments={'Weapon skill damage +5%','STR+4','Accuracy+12','Attack+7',}},
 								legs="Wakido Haidate +3",
 								feet={ name="Valorous Greaves", augments={'Attack+14','Weapon skill damage +4%','VIT+5','Accuracy+15',}},
@@ -779,26 +799,40 @@ windower.send_command('input //gs org')
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Regal Ring",
 								right_ring="Niqmaddu Ring",
-								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},	
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},	
 								};
-	
-	sets['WeaponSkill']['Tachi: Fudo'] = {				
+	sets['WeaponSkill']['Impulse Drive'] = {
 								ammo="Knobkierrie",
-								head="Flam. Zucchetto +2",
-								body={ name="Valorous Mail", augments={'Accuracy+10','"Mag.Atk.Bns."+17','Weapon skill damage +9%','Accuracy+17 Attack+17','Mag. Acc.+8 "Mag.Atk.Bns."+8',}},
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body="Sakonji Domaru +3",
 								hands={ name="Valorous Mitts", augments={'Weapon skill damage +5%','STR+4','Accuracy+12','Attack+7',}},
 								legs="Wakido Haidate +3",
-								feet="Hiza. Sune-Ate +2",
+								feet="Ken. Sune-Ate +1",
 								neck="Fotia Gorget",
 								waist="Fotia Belt",
 								left_ear="Thrud Earring",
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Flamma Ring",
-								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
+								}
+	sets['WeaponSkill']['Tachi: Fudo'] = {				
+								ammo="Knobkierrie",
+								head="Blistering Sallet +1",
+								body="Sakonji Domaru +3",
+								hands={ name="Valorous Mitts", augments={'Weapon skill damage +5%','STR+4','Accuracy+12','Attack+7',}},
+								legs="Wakido Haidate +3",
+								feet={ name="Valorous Greaves", augments={'Attack+14','Weapon skill damage +4%','VIT+5','Accuracy+15',}},
+								neck="Fotia Gorget",
+								waist="Sailfi Belt +1",
+								left_ear="Thrud Earring",
+								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
+								left_ring="Niqmaddu Ring",
+								right_ring="Flamma Ring",
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
 								};
 	sets['WeaponSkill']['Tachi: Fudo']['Sekkanoki'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], {hands="Kasuga Kote +1",});
-	--sets['WeaponSkill']['Tachi: Fudo']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], { left_ear="Lugra Earring +1",});
+	sets['WeaponSkill']['Tachi: Fudo']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], { left_ear="Lugra Earring +1",});
 	sets['WeaponSkill']['Tachi: Fudo']['Meikyo Shisui'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], { feet="Sak. Sune-Ate +3",});
 	sets['WeaponSkill']['Tachi: Fudo']['Sekkanoki']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], { left_ear="Lugra Earring +1",hands="Kasuga Kote +1",});
 	sets['WeaponSkill']['Tachi: Fudo']['Meikyo Shisui']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Tachi: Fudo'], { left_ear="Lugra Earring +1",feet="Sak. Sune-Ate +3",});
@@ -820,7 +854,7 @@ windower.send_command('input //gs org')
 	sets['WeaponSkill']['Tachi: Ageha'] = {				
 								ammo="Knobkierrie",
 								head="Flam. Zucchetto +2",
-								body="Flamma Korazin +2",
+								body="Sakonji Domaru +3",
 								hands="Flam. Manopolas +2",
 								legs="Flamma Dirs +2",
 								feet="Hiza. Sune-Ate +2",
@@ -830,7 +864,7 @@ windower.send_command('input //gs org')
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Flamma Ring",
-								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
 								};
 	
 	sets['WeaponSkill']['Tachi: Yukikaze'] = sets['WeaponSkill']['Tachi: Fudo']
@@ -868,10 +902,24 @@ windower.send_command('input //gs org')
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Regal Ring",
 								right_ring="Niqmaddu Ring",
-								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
 								};
 	
-	sets['WeaponSkill']['Tachi: Jinpu'] = sets['WeaponSkill']['Tachi: Koki']
+	sets['WeaponSkill']['Tachi: Jinpu'] = {
+								ammo="Knobkierrie",
+								head={ name="Valorous Mask", augments={'Accuracy+6','Weapon skill damage +5%','STR+10',}},
+								body={ name="Found. Breastplate", augments={'Accuracy+14','Mag. Acc.+13','Attack+14','"Mag.Atk.Bns."+14',}},
+								hands={ name="Leyline Gloves", augments={'Accuracy+15','Mag. Acc.+15','"Mag.Atk.Bns."+15','"Fast Cast"+3',}},
+								legs="Wakido Haidate +3",
+								feet={ name="Founder's Greaves", augments={'VIT+10','Accuracy+15','"Mag.Atk.Bns."+15','Mag. Evasion+15',}},
+								neck="Fotia Gorget",
+								waist="Orpheus's Sash",
+								left_ear="Friomisi Earring",
+								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
+								left_ring="Niqmaddu Ring",
+								right_ring="Regal Ring",
+								back={ name="Smertrios's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
+								}
 	
 	sets['WeaponSkill']['Tachi: Kagero'] = sets['WeaponSkill']['Tachi: Koki']
 	
@@ -981,7 +1029,7 @@ windower.send_command('input //gs org')
 	windower.send_command('bind f12 gs c cycle weapon') --weapon swap keybind-- 
 	windower.send_command('bind !f12 gs c cycle Autoequip') --Toggles auto equip of gear-- 
 	windower.send_command('input /echo [ Job Changed to Samurai ]')  --change to the job your using--
-	windower.send_command('wait 5; input /lockstyleset 1')  -- need to make lockstyle --
+	windower.send_command('wait 5; input /lockstyleset 7')  -- need to make lockstyle --
 	windower.send_command('wait 1; input //jc sub War') -- changes subjob to sam
 	windower.send_command('input /macro book 3; wait .1; input /macro set 1')  -- changes macro pallet to jerb --
 	send_command('bind ^home gs c warpring')  --control+home
@@ -1002,7 +1050,7 @@ end
 	
 function filtered_action(spell)
 		if player.equipment.main == "Shining One" then
-			if spell.english=="Upheaval" then
+			if spell.english=="Tachi: Fudo" then
 				windower.send_command('input /ws "Impulse Drive" <t>')
 			-- elseif 	spell.english=="Tachi: Fudo" then
 				-- windower.send_command('input /ws "Sonic Thrust" <t>')

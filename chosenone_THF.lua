@@ -313,7 +313,7 @@ function get_sets()
 								legs="Malignance Tights",
 								feet="Malignance Boots",
 								neck="Lissome Necklace",
-								waist="Chaac Belt",
+								waist={ name="Sailfi Belt +1", augments={'Path: A',}},
 								left_ear="Sherida Earring",
 								right_ear="Telos Earring",
 								left_ring="Gere Ring",

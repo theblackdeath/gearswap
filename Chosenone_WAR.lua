@@ -22,7 +22,7 @@ _L['areasCities'] = S{"Ru'Lude Gardens","Upper Jeuno","Lower Jeuno","Port Jeuno"
 ---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- set cycle toggles
 -- these can be named whatever you want, just make sure you use the same names in your sets
-_L['Idle-Modes'] = { 'Normal','DT' };
+_L['Idle-Modes'] = { 'Regain','Normal','DT' };
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid","DT" };
 _L['Weapon-Modes'] = { "Chango","Ukonvasara","Shining One","Ragnarok","Montante +1","Quint Spear","Naegling", };
 
@@ -249,7 +249,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Pumm. Mufflers +3",
+								hands="Volte Moufles",
 								legs="Volte Hose",
 								feet="Sulev. Leggings +2",
 								neck="Loricate Torque +1",
@@ -275,35 +275,61 @@ windower.send_command('input //gs org')
 								right_ring="Moonlight Ring",
 								back="Moonbeam Cape",
 								}
+								
+	sets['Regain'] = {					-- 
+								ammo="Staunch Tathlum +1",
+								head="Volte Salade",
+								body="Makora Meikogai",
+								hands="Volte Moufles",
+								legs="Volte Hose",
+								feet="Sulev. Leggings +2",
+								neck="Loricate Torque +1",
+								waist="Asklepian Belt",
+								left_ear="Eabani Earring",
+								right_ear="Sanare Earring",
+								left_ring="Defending Ring",
+								right_ring="Moonlight Ring",
+								back={ name="Cichol's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','Mag. Evasion+10','"Fast Cast"+10','Damage taken-5%',}},
+								}							
+								
+								
+							
 	sets['Idle'] = {};
 	
 	sets['Idle']['Chango'] = {main="Chango", sub="Utu Grip",}
-	sets['Idle']['Chango']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Chango'] ,{})
-	sets['Idle']['Chango']['DT'] = set_combine(sets['DT'],sets['Idle']['Chango'] ,{})
+	sets['Idle']['Chango']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Chango'] ,{main="Chango", sub="Utu Grip",})
+	sets['Idle']['Chango']['DT'] = set_combine(sets['DT'],sets['Idle']['Chango'] ,{main="Chango", sub="Utu Grip",})
+	sets['Idle']['Chango']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Chango'] ,{main="Chango", sub="Utu Grip",})
 	
 	sets['Idle']['Ukonvasara'] = {}
 	sets['Idle']['Ukonvasara']['Normal'] = set_combine(sets['Normal'] ,{main="Ukonvasara", sub="Utu Grip",})
 	sets['Idle']['Ukonvasara']['DT'] = set_combine(sets['DT'] ,{main="Ukonvasara", sub="Utu Grip",})
+	sets['Idle']['Ukonvasara']['Regain'] = set_combine(sets['Regain'] ,{main="Ukonvasara", sub="Utu Grip",})
 	
 	sets['Idle']['Ragnarok'] = {main="Ragnarok", sub="Utu Grip",}
 	sets['Idle']['Ragnarok']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Ragnarok'] ,{})
 	sets['Idle']['Ragnarok']['DT'] = set_combine(sets['DT'],sets['Idle']['Ragnarok'] ,{})
+	sets['Idle']['Ragnarok']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Ragnarok'] ,{})
 	
 	sets['Idle']['Montante +1'] = {main="Montante +1", sub="Utu Grip",}
 	sets['Idle']['Montante +1']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Montante +1'] ,{})
 	sets['Idle']['Montante +1']['DT'] = set_combine(sets['DT'],sets['Idle']['Montante +1'] ,{})
+	sets['Idle']['Montante +1']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Montante +1'] ,{})
 	
 	sets['Idle']['Quint Spear'] = {main="Quint Spear", sub="Utu Grip",}
 	sets['Idle']['Quint Spear']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Quint Spear'] ,{})
 	sets['Idle']['Quint Spear']['DT'] = set_combine(sets['DT'],sets['Idle']['Quint Spear'] ,{})
+	sets['Idle']['Quint Spear']['Regain'] = set_combine(sets['Regain'],sets['Idle']['Quint Spear'] ,{})
 	
 	sets['Idle']['Naegling'] = {main="Naegling", _L['SubWeapon'],}
 	sets['Idle']['Naegling']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Naegling'] ,{})
 	sets['Idle']['Naegling']['DT'] = set_combine(sets['DT'], sets['Idle']['Naegling'] ,{})
+	sets['Idle']['Naegling']['Regain'] = set_combine(sets['Regain'], sets['Idle']['Naegling'] ,{})
 	
 	sets['Idle']['Shining One'] = {main="Shining One", sub="Utu Grip",}
 	sets['Idle']['Shining One']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Shining One'] ,{})
 	sets['Idle']['Shining One']['DT'] = set_combine(sets['DT'], sets['Idle']['Shining One'] ,{})
+	sets['Idle']['Shining One']['Regain'] = set_combine(sets['Regain'], sets['Idle']['Shining One'] ,{})
 	
 	--Engaged Sets--
 	
@@ -395,7 +421,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Pumm. Cuisses +3",
 								feet="Pumm. Calligae +3",
 								neck={ name="War. Beads +2", augments={'Path: A',}},
@@ -413,7 +439,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Hjarrandi Helm",
 								body={ name="Souv. Cuirass +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs={ name="Souv. Diechlings +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
 								feet={ name="Souveran Schuhs +1", augments={'HP+65','Attack+25','Magic dmg. taken -4',}},
 								neck="Loricate Torque +1",
@@ -512,7 +538,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Pumm. Calligae +3",
 								neck="War. Beads +2",
@@ -530,7 +556,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Flam. Zucchetto +2",
 								body={ name="Souv. Cuirass +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Pumm. Calligae +3",
 								neck="Loricate Torque +1",
@@ -586,7 +612,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Volte Salade",
 								body="Volte Haubert",
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs="Sulev. Cuisses +2",
 								feet="Pumm. Calligae +3",
 								neck="War. Beads +2",
@@ -604,7 +630,7 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Hjarrandi Helm",
 								body={ name="Souv. Cuirass +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
-								hands="Sulev. Gauntlets +2",
+								hands="Volte Moufles",
 								legs={ name="Souv. Diechlings +1", augments={'HP+105','Enmity+9','Potency of "Cure" effect received +15%',}},
 								feet={ name="Souveran Schuhs +1", augments={'HP+65','Attack+25','Magic dmg. taken -4',}},
 								neck="Loricate Torque +1",
@@ -876,35 +902,47 @@ windower.send_command('input //gs org')
 	sets['WeaponSkill']['Scourge']['lugra_earring_set'] = set_combine(sets['WeaponSkill']['Scourge'], { left_ear="Lugra Earring +1",});
 	
 	sets['WeaponSkill']["Ukko's Fury"] = {				
-								ammo="Knobkierrie",
-								head={ name="Agoge Mask +3", augments={'Enhances "Savagery" effect',}},
-								body="Pumm. Lorica +3",
-								hands={ name="Argosy Mufflers +1", augments={'STR+20','"Dbl.Atk."+3','Haste+3%',}},
-								legs={ name="Argosy Breeches +1", augments={'STR+12','DEX+12','Attack+20',}},
-								feet="Flam. Gambieras +2",
-								neck="War. Beads +2",
-								waist="Fotia Belt",
-								--left_ear="Brutal Earring",
+								ammo="Yetshila +1",
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body="Hjarrandi Breast.",
+								hands={ name="Odyssean Gauntlets", augments={'STR+10','Attack+14','Weapon skill damage +9%','Mag. Acc.+11 "Mag.Atk.Bns."+11',}},
+								legs={ name="Odyssean Cuisses", augments={'Accuracy+25 Attack+25','"Dbl.Atk."+5','Accuracy+8',}},
+								feet={ name="Valorous Greaves", augments={'Accuracy+25 Attack+25','"Store TP"+5','Accuracy+14','Attack+11',}},
+								neck={ name="War. Beads +2", augments={'Path: A',}},
+								waist={ name="Sailfi Belt +1", augments={'Path: A',}},
 								left_ear="Thrud Earring",
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Regal Ring",
-								back={ name="Cichol's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Weapon skill damage +10%',}},
+								back={ name="Cichol's Mantle", augments={'STR+20','Accuracy+20 Attack+20','STR+10','Crit.hit rate+10','Phys. dmg. taken-10%',}},
 								};
 
 	sets['WeaponSkill']["Ukko's Fury"]['lugra_earring_set'] = set_combine(sets['WeaponSkill']["Ukko's Fury"], { left_ear="Lugra Earring +1",});
 	
 	
 	sets['WeaponSkill']['Upheaval'] = {		
+								-- ammo="Knobkierrie",
+								-- head={ name="Agoge Mask +3", augments={'Enhances "Savagery" effect',}},
+								-- body="Pumm. Lorica +3",
+								-- hands={ name="Odyssean Gauntlets", augments={'STR+10','Attack+14','Weapon skill damage +9%','Mag. Acc.+11 "Mag.Atk.Bns."+11',}},
+								-- legs="Pumm. Cuisses +3",
+								-- feet="Sulev. Leggings +2",
+								-- neck={ name="War. Beads +2", augments={'Path: A',}},
+								-- waist="Ioskeha Belt +1",
+								-- left_ear="Thrud Earring",
+								-- right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
+								-- left_ring="Niqmaddu Ring",
+								-- right_ring="Regal Ring",
+								-- back={ name="Cichol's Mantle", augments={'VIT+20','Accuracy+20 Attack+20','VIT+10','Weapon skill damage +10%',}},
 								
 								ammo="Knobkierrie",									-- avg ws 	13089 at 287 samples								
 								head={ name="Agoge Mask +3", augments={'Enhances "Savagery" effect',}},
 								body="Pumm. Lorica +3",
-								hands="Sulev. Gauntlets +2",
+								hands={ name="Odyssean Gauntlets", augments={'STR+10','Attack+14','Weapon skill damage +9%','Mag. Acc.+11 "Mag.Atk.Bns."+11',}},
 								legs="Sulev. Cuisses +2",
 								feet="Sulev. Leggings +2",
 								neck="War. Beads +2",
-								waist="Fotia Belt",
+								waist="Ioskeha Belt +1",
 								left_ear="Thrud Earring",
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",

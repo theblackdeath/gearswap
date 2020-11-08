@@ -42,7 +42,7 @@ _L['BlueMagicSkillRecast'] = S{'MP Drainkiss','Digest','Blood Saber','Blood Drai
 -- these can be named whatever you want, just make sure you use the same names in your sets
 _L['Idle-Modes'] = { 'Normal','DT' };
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid","DT" };
-_L['Weapon-Modes'] = { "Naegling", "Nibiru Cudgel","Maxentius"};
+_L['Weapon-Modes'] = { "Naegling","Maxentius"};
 
 -- set defaults, shouldn't need to change these, makes default mode whatever mode is defined first.
 _L['Idle_index'] = _L['Idle-Modes'][1];
@@ -265,16 +265,16 @@ windower.send_command('input //gs org')
 								ammo="Staunch Tathlum +1",
 								head="Malignance Chapeau",
 								body="Malignance Tabard",
-								hands="Malignance Gloves",
+								hands={ name="Herculean Gloves", augments={'MND+12','Crit.hit rate+1','"Refresh"+2','Accuracy+1 Attack+1','Mag. Acc.+11 "Mag.Atk.Bns."+11',}},
 								legs="Malignance Tights",
 								feet="Malignance Boots",
 								neck="Loricate Torque +1",
 								waist="Fucho-no-Obi",
 								left_ear="Etiolation Earring",
 								right_ear="Ethereal Earring",
-								left_ring="Sheltered Ring",
+								left_ring="Purity Ring",
 								right_ring="Defending Ring",
-								back="Moonbeam Cape",		
+								back="Solemnity Cape",		
 								}
 	sets['DT'] = {
 								ammo="Staunch Tathlum +1",
@@ -301,7 +301,7 @@ windower.send_command('input //gs org')
 	sets['Idle']['Nibiru Cudgel']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Nibiru Cudgel'] ,{})
 	sets['Idle']['Nibiru Cudgel']['DT'] = set_combine(sets['DT'],sets['Idle']['Nibiru Cudgel'] ,{})
 	
-	sets['Idle']['Maxentius'] = {main="Maxentius",sub="Nibiru Cudgel",}
+	sets['Idle']['Maxentius'] = {main="Maxentius",sub="Septoptic +1",}
 	sets['Idle']['Maxentius']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Maxentius'] ,{})
 	sets['Idle']['Maxentius']['DT'] = set_combine(sets['DT'],sets['Idle']['Maxentius'] ,{})
 	
@@ -412,23 +412,23 @@ windower.send_command('input //gs org')
 	sets['Engaged']['Maxentius'] = {}
 	sets['Engaged']['Maxentius']['Normal'] = set_combine(sets['Engaged']['Naegling']['Normal'] ,{						
 								main="Maxentius",
-								sub="Nibiru Cudgel",
+								sub="Septoptic +1",
 								});					
 									
 	
 	sets['Engaged']['Maxentius']['Accuracy'] = set_combine(sets['Engaged']['Naegling']['Accuracy'] ,{						
 								main="Maxentius",
-								sub="Nibiru Cudgel",
+								sub="Septoptic +1",
 								});
 	
 	sets['Engaged']['Maxentius']['Hybrid'] = set_combine(sets['Engaged']['Naegling']['Hybrid'] ,{						
 								main="Maxentius",
-								sub="Nibiru Cudgel",
+								sub="Septoptic +1",
 								});
 								
 	sets['Engaged']['Maxentius']['DT'] = set_combine(sets['Engaged']['Naegling']['DT'] ,{						
 								main="Maxentius",
-								sub="Nibiru Cudgel",
+								sub="Septoptic +1",
 								});
 
 	
@@ -549,7 +549,7 @@ windower.send_command('input //gs org')
 								ring1="Rajas ring",
 								ring2="Ifrit ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'Accuracy+16','"Store TP"+4','STR+15',}},
 								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
 								}
@@ -562,7 +562,7 @@ windower.send_command('input //gs org')
 								ring1="Ifrit ring +1",
 								ring2="Rajas ring",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'Accuracy+16','"Store TP"+4','STR+15',}},
 								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
 								};
@@ -575,7 +575,7 @@ windower.send_command('input //gs org')
 								ring1="Apate Ring",
 								ring2="Rajas ring",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'Accuracy+16','"Store TP"+4','STR+15',}},
 								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
 								};
@@ -588,7 +588,7 @@ windower.send_command('input //gs org')
 								ring1="Ifrit ring +1",
 								ring2="Apate ring",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'Accuracy+16','"Store TP"+4','STR+15',}},
 								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
 								};
@@ -602,7 +602,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Rajas ring",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
 								};
@@ -616,7 +616,7 @@ windower.send_command('input //gs org')
 								ring1="Ifrit ring +1",
 								ring2="Rajas ring",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'Accuracy+16','"Store TP"+4','STR+15',}},
 								feet="Volte Boots"
 								};
@@ -627,8 +627,8 @@ windower.send_command('input //gs org')
 								hands={ name="Amalric Gages +1", augments={'INT+12','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								legs={ name="Amalric Slops +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								feet={ name="Amalric Nails +1", augments={'Mag. Acc.+20','"Mag.Atk.Bns."+20','"Conserve MP"+7',}},
-								neck="Sanctity Necklace",
-								waist="Acuity Belt +1",
+								neck="Baetyl Pendant",
+								waist="Sacro Cord",
 								left_ear="Regal Earring",
 								right_ear="Friomisi Earring",
 								left_ring="Metamor. Ring +1",
@@ -646,8 +646,8 @@ windower.send_command('input //gs org')
 								hands={ name="Amalric Gages +1", augments={'INT+12','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								legs={ name="Amalric Slops +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								feet={ name="Amalric Nails +1", augments={'Mag. Acc.+20','"Mag.Atk.Bns."+20','"Conserve MP"+7',}},
-								neck="Sanctity Necklace",
-								waist="Acuity Belt +1",
+								neck="Baetyl Pendant",
+								waist="Sacro Cord",
 								left_ear="Regal Earring",
 								right_ear="Friomisi Earring",
 								left_ring="Archon Ring",
@@ -669,7 +669,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Shiva Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -685,7 +685,7 @@ windower.send_command('input //gs org')
 								legs={ name="Amalric Slops +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								feet={ name="Amalric Nails +1", augments={'Mag. Acc.+20','"Mag.Atk.Bns."+20','"Conserve MP"+7',}},
 								neck="Mirage Stole",
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								left_ear="Regal Earring",
 								right_ear="Friomisi Earring",
 								left_ring="Metamor. Ring +1",
@@ -699,7 +699,7 @@ windower.send_command('input //gs org')
 	sets['midcast']['BlueMagicINTVIT'] = {
 								ammo="Pemphredo Tathlum",
 								head="Jhakri Coronal +2",
-								neck="Sanctity Necklace",
+								neck="Baetyl Pendant",
 								ear1="Digni. Earring",
 								ear2="Gwati earring",
 								body={ name="Amalric Doublet", augments={'MP+60','Mag. Acc.+15','"Mag.Atk.Bns."+15',}},
@@ -707,7 +707,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Shiva Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -717,7 +717,7 @@ windower.send_command('input //gs org')
 	sets['midcast']['BlueMagicINTAGI'] = {
 								ammo="Pemphredo Tathlum",
 								head="Jhakri Coronal +2",
-								neck="Sanctity Necklace",
+								neck="Baetyl Pendant",
 								ear1="Regal Earring",
 								ear2="Friomisi earring",
 								body={ name="Amalric Doublet", augments={'MP+60','Mag. Acc.+15','"Mag.Atk.Bns."+15',}},
@@ -725,7 +725,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Shiva Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -736,7 +736,7 @@ windower.send_command('input //gs org')
 	sets['midcast']['BlueMagicINTMND'] = {
 								ammo="Pemphredo Tathlum",
 								head="Jhakri Coronal +2",
-								neck="Sanctity Necklace",
+								neck="Baetyl Pendant",
 								ear1="Regal Earring",
 								ear2="Friomisi earring",
 								body={ name="Amalric Doublet", augments={'MP+60','Mag. Acc.+15','"Mag.Atk.Bns."+15',}},
@@ -744,7 +744,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Shiva Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -755,7 +755,7 @@ windower.send_command('input //gs org')
 	sets['midcast']['BlueMagicMND'] = {
 								ammo="Pemphredo Tathlum",
 								head="Jhakri Coronal +2",
-								neck="Sanctity Necklace",
+								neck="Baetyl Pendant",
 								ear1="Regal Earring",
 								ear2="Friomisi earring",
 								body={ name="Amalric Doublet", augments={'MP+60','Mag. Acc.+15','"Mag.Atk.Bns."+15',}},
@@ -763,7 +763,7 @@ windower.send_command('input //gs org')
 								ring1="Metamor. Ring +1",
 								ring2="Shiva Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Eschan Stone",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -774,7 +774,7 @@ windower.send_command('input //gs org')
 	sets['midcast']['BlueMagicINTMNDDRK'] = {
 								ammo="Pemphredo Tathlum",
 								head="Pixie Hairpin +1",
-								neck="Sanctity Necklace",
+								neck="Baetyl Pendant",
 								ear1="Regal Earring",
 								ear2="Friomisi earring",
 								body={ name="Amalric Doublet", augments={'MP+60','Mag. Acc.+15','"Mag.Atk.Bns."+15',}},
@@ -782,7 +782,7 @@ windower.send_command('input //gs org')
 								ring1="Archon ring",
 								ring2="Metamor. Ring +1",
 								back={ name="Cornflower Cape", augments={'MP+22','DEX+2','Accuracy+2','Blue Magic skill +10',}},
-								waist="Acuity Belt +1",
+								waist="Sacro Cord",
 								legs={ name="Herculean Trousers", augments={'"Fast Cast"+1','"Mag.Atk.Bns."+23','Accuracy+19 Attack+19','Mag. Acc.+18 "Mag.Atk.Bns."+18',}},
 								feet="Volte Boots"
 								};
@@ -797,8 +797,8 @@ windower.send_command('input //gs org')
 								hands={ name="Amalric Gages +1", augments={'INT+12','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								legs={ name="Amalric Slops +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}},
 								feet={ name="Amalric Nails +1", augments={'Mag. Acc.+20','"Mag.Atk.Bns."+20','"Conserve MP"+7',}},
-								neck="Sanctity Necklace",
-								waist="Acuity Belt +1",
+								neck="Baetyl Pendant",
+								waist="Sacro Cord",
 								left_ear="Regal Earring",
 								right_ear="Friomisi Earring",
 								left_ring="Weatherspoon Ring +1",
@@ -835,7 +835,7 @@ windower.send_command('input //gs org')
 								waist="Acuity Belt +1",
 								left_ear="Digni. Earring",
 								right_ear="Gwati Earring",
-								left_ring="Sangoma Ring",
+								right_ring="Weatherspoon Ring +1",
 								right_ring="Metamor. Ring +1",
 								back={ name="Rosmerta's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','Haste+10','Damage taken-5%',}},
 								};
@@ -853,7 +853,7 @@ windower.send_command('input //gs org')
 								left_ear="Digni. Earring",
 								right_ear="Hermetic Earring",
 								left_ring="Metamor. Ring +1",
-								right_ring="Sangoma Ring",
+								right_ring="Weatherspoon Ring +1",
 								back={ name="Rosmerta's Cape", augments={'INT+20','Mag. Acc+20 /Mag. Dmg.+20','INT+10','Haste+10','Damage taken-5%',}},
 								};
 	sets['midcast']['BlueMagicSkillRecast'] = {
