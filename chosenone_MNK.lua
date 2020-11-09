@@ -1,3 +1,7 @@
+
+ --  macro commands for the geo one are   "/console gs c LastIndi" "/console gs c LastEntrust" "/console gs c LastGeo"
+
+
 -- requires/includes
 require('tables');
 require('strings');
@@ -5,10 +9,20 @@ include('organizer-lib')
 text = require('texts')
 -- define our table to hold our local indices. Putting everything in our local table prevents variable mismatch from any required/included files.
 local _L = { };
+--------------------------------------------------------------------------------------------------------------------------------------------------->
 _L['DT'] = false
+_L['Autoequip'] = true
+_L['BoostUP'] = false
+_L['areasCities'] = S{"Ru'Lude Gardens","Upper Jeuno","Lower Jeuno","Port Jeuno",
+	"Port Windurst","Windurst Waters","Windurst Woods","Windurst Walls","Heavens Tower",
+	"Port San d'Oria","Northern San d'Oria","Southern San d'Oria","Port Bastok",
+	"Bastok Markets","Bastok Mines","Metalworks","Aht Urhgan Whitegate","Tavanazian Safehold",
+	"Nashmau","Selbina","Mhaura","Norg","Eastern Adoulin","Western Adoulin","Kazham",}
+	
+---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- set cycle toggles
 -- these can be named whatever you want, just make sure you use the same names in your sets
-_L['Idle-Modes'] = { 'Normal','DT' };
+_L['Idle-Modes'] = { 'Normal','DT'};
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid","DT" };
 _L['Weapon-Modes'] = { "Spharai","Godhands", };
 
@@ -16,7 +30,6 @@ _L['Weapon-Modes'] = { "Spharai","Godhands", };
 _L['Idle_index'] = _L['Idle-Modes'][1];
 _L['Engaged_index'] = _L['Engaged-Modes'][1];
 _L['Weapon_index'] = _L['Weapon-Modes'][1];
-
 
 -- table for ultimate weapon aftermath overrides
 -- the keys to this table should be the weapon you want to use aftermath overrides for
@@ -26,69 +39,55 @@ _L['Weapon_index'] = _L['Weapon-Modes'][1];
 -- i.e. to use Overrides Liberator level 3, but no other AM level, in this table: ['Liberator'] = { false, false, true }
 -- then as your sets, you might have sets['Engaged']['High-ACC']['Aftermath: Lv.3'] = { };
 -- this will be taken into account for status_change, precast, midcast, and aftercast
--- you could use this for magic acc from say Carnwenhan, ['Carnwenhan'] = { true, false, false }, sets['midcast']['BardSong']['Aftermath Level: 1'] = { };
+-- you could use this for magic acc from say Carnwenhan, ['Carnwenhan'] = { true, false, false }, sets['midcast']['BardSong']['Aftermath: Lv.1'] = { };
 -- for relic, since they don't use different levels, ['Ragnarok'] = { true }
+-- happens in both precast, midcast, aftercast and status_change
 _L['Aftermath-Overrides'] =
 {
-	['Godhands'] = { false, false, false },
-	['Spharai'] = { false, false, false },
 };
-
 
 -- this table holds actions that we want to do something a little different for when certain buffs are up
 -- key = the action name to override 
--- value = table with three keys, { precast = true|false, midcast = true|false, buff_name = string };
--- i.e. ["Ukko's Fury"] = { precast = true, midcast = false, buff_name = 'Berserk' };
--- i.e. ['Drain II'] = { precast = false, midcast = true, buff_name = 'Dark Seal' };
+-- value = table with three keys, { ['precast'] = true|false, ['midcast'] = true|false, ['buff_name'] = string };
+-- i.e. ["Ukko's Fury"] = { ['precast'] = true, ['midcast'] = false, ['buff_name'] = 'Berserk' }
+-- i.e. ['Drain II'] = { ['precast'] = false, ['midcast'] = true, ['buff_name'] = 'Dark Seal' }
+-- you can have multiple buffs override the same action. it's very important to not have extra spaces around the |
+-- i.e. ['Rudra\'s Storm'] = { ['precast'] = true, ['midcast'] = true, ['buff_name'] = 'Sneak Attack|Trick Attack' }
 -- weaponskill and job abilities should use 'precast = true' since they don't have a midcast to them
 -- The casing should match whatever is in the windower resources
 -- when there is an action/buff match, it will add a key onto the end of the sets
--- i.e. sets['WeaponSkill']["Ukko's Fury"] = { }; turns into sets['WeaponSkill']["Ukko's Fury"]['Berserk'] = { };
+-- i.e. sets['WeaponSkill']['Ukko\'s Fury'] = { }; turns into sets['WeaponSkill']['Ukko\'s Fury']['Berserk'] = { };
+-- happens in both precast and midcast
 _L['Buff-Overrides'] =
 {
+	["Victory Smite"] = { precast = true, midcast = false, buff_name = 'Impetus' };
+	["Shijin Spiral"] = { precast = true, midcast = false, buff_name = 'Impetus' };
+	["Howling Fist"] = { precast = true, midcast = false, buff_name = 'Impetus' };
+	["Raging Fists"] = { precast = true, midcast = false, buff_name = 'Impetus' };
 };
 
--- this tables holds buffs we want to cancel when another action is taking place
--- key is the action name, value is a table of buffs that we want to cancel for that action name
--- i.e. ['Stoneskin'] = { [37] = 'Stoneskin' } -- cancel stoneskin if it's up when we cast stoneskin
--- i.e. ['Utsusemi: Ichi'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)' } -- cancel shadows for Utsu
-_L['Buff-Cancels'] =
-{
-	['Utsusemi: Ichi'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)'},
-	['Utsusemi: Ni'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)'},
-	['Berserk'] = { [57] = 'Defender' },
-	['Defender'] = { [56] = 'Berserk' },
-	
-};
-
--- this table is written like the one above it but will cancel a job ability or spell from going off if said buff is active
-_L['Buff-To-Prevent-Spell'] = 
-{
-	['Warcry'] = { [460] = 'Blood Rage' },
-	['Blood Rage'] = { [68] = 'Warcry' },
-	['Blood Rage'] = { [68] = 'Blood Rage' },
-	['Warcry'] = { [460] = 'Warcry' },
-
-
-};
-
-
--- table to hold certain status overrides when we have certain buffs on
--- locks on cursna gear when we have doom, dt when terror'd, etc.
--- key is buff name, with a table value with three keys
--- the key to the table, i.e. the buff name, MUST match the casing of the buffactive table
--- i.e. ['Doom'] = { idle = true, engaged = true, set_name = 'Doom' };
--- sets should be prefixed with sets['Status-Overrides'][set_name];
--- i.e. sets['Status-Overrides']['Doom'] = { };
--- this will also go in priority in a fifo order
+-- this table holds buffs that we want to check for when not doing an action (i.e. idle, engaged, resting) and potentially override a base set
+-- key = the buff name
+-- value = table with keys matching status name, and values being boolean
+-- i.e. ['Samurai Roll'] = { ['engaged'] = true }
+-- i.e. ['Sublimation'] = { ['idle'] = true }
+-- and your status set might look like sets['Engaged']['acc']['Aftermath: Lv. 2']['Samurai Roll'] = { };
+-- this will loop the entire table, appending buffs as it finds the buff active and the set existing
+-- this means if you want to look for multiple buffs at once, you need to make sure to name the sets in the order you put the buffs in this table
+-- i.e. if you want to look for both sneak attack and trick attack, you might have something like:
+-- ['Sneak Attack'] = { ['Engaged'] = true }, -- CASE SENSITIVE
+-- ['Trick Attack'] = { ['Engaged'] = true }, -- CASE SENSITIVE
+-- and then you'd want three sets:
+-- sets['Engaged']['hybrid']['Sneak Attack'] = { }; -- for when only sneak attack is on and in engaged mode hybrid
+-- sets['Engaged']['hybrid']['Sneak Attack']['Trick Attack'] = { }; -- for when both sneak and trick attack is on, and in engaged mode hybrid
+-- sets['Engaged']['hybrid']['Trick Attack'] = { };  -- for when just trick attack is on, and in engaged mode hybrid
+-- This would not be a valid set: sets['engaged']['hybrid']['Trick Attack']['Sneak Attack'] = { };
+-- happens in aftercast, status_change
 _L['Status-Buff-Overrides'] = 
 {
-	['Counterstance'] = { Idle = false, Engaged = true, set_name = 'Counterstance' },
-	['Doom'] = { Idle = true, Engaged = true, set_name = 'Doom' },
-	['Sleep'] = { Idle = false, Engaged = true, set_name = 'Sleep' },
-	['Terror'] = { Idle = true, Engaged = true, set_name = 'Terror' },
-	['Petrification'] = { Idle = true, Engaged = true, set_name = 'Petrification' },
-	['Stun'] = { Idle = true, Engaged = true, set_name = 'Stun' },
+	['Boost'] = { ['Idle'] = true };
+	['Counterstance'] = { ['Engaged'] = true };
+	['Impetus'] = { ['Engaged'] = true };
 };
 
 -- how to do day/night stuff
@@ -98,17 +97,41 @@ _L['Status-Buff-Overrides'] =
 -- precast and midcast will have a value that is a table, with action names as the key, and the same table as above for the value
 -- if start > end then it will check, if (world['time'] > start or world['time'] < end) then
 -- if end > start then it will check, if (world['time'] < end and world['time'] > start) then
--- for idle/engaged:
--- i.e. ['idle'] = { ['start'] = 18.00, ['end'] = 4.00, set_name = 'set_to_equip' }
+-- for idle/engaged (case sensitive!):
+-- i.e. ['Idle'] = { ['start'] = 18.00, ['end'] = 4.00, ['set_name'] = 'set_to_equip' }
 -- this set will be applied to a baseset 
 -- for precast/midcast:
--- i.e. ['precast'] = { ['Torcleaver'] = { ['start'] = 18.00, ['end'] = 4.00, set_name = 'lugra_earring_set' } }
+-- i.e. ['precast'] = { ['Torcleaver'] = { ['start'] = 18.00, ['end'] = 4.00, ['set_name'] = 'lugra_earring_set' } }
 -- this set will be applied to a baseset, so for this example you should have a sets['WeaponSkill']['Torcleaver']['lugra_earring_set'] = { };
+-- happens in both precast and midcast
 _L['Time-Overrides'] = 
 {
 
 };
 
+-- this tables holds buffs we want to cancel when another action is taking place
+-- key is the action name, value is a table of buffs that we want to cancel for that action name
+-- i.e. ['Stoneskin'] = { [37] = 'Stoneskin' } -- cancel stoneskin if it's up when we cast stoneskin
+-- i.e. ['Utsusemi: Ichi'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)' } -- cancel shadows for Utsu
+-- this is only looked for in precast
+_L['Buff-Cancels'] =
+{
+	['Sleep'] = { [37] = 'Stoneskin' },
+	['Utsusemi: Ichi'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)'},
+	['Utsusemi: Ni'] = { [66] = 'Copy Image', [444] = 'Copy Image (2)', [445] = 'Copy Image (3)', [446] = 'Copy Image (4)'},
+	['Berserk'] = { [57] = 'Defender' },
+	['Defender'] = { [56] = 'Berserk' },
+};
+--------------------------------------------------------------------------------------------------------------------------------------------------->
+-- this table is written like the one above it but will cancel a job ability or spell from going off if said buff is active
+_L['Buff-To-Prevent-Spell'] = 
+{
+	['Warcry'] = { [460] = 'Blood Rage' },
+	['Blood Rage'] = { [68] = 'Warcry' },
+
+
+};
+---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- table for weather/day stuff
 -- assumes you have a set that is called sets['Weather-Overrides'] = { };
 -- can use a specific element set too if you don't want to use all-in-one obi
@@ -120,22 +143,39 @@ _L['Time-Overrides'] =
 -- i.e. ['Leaden Salute'] = true
 -- this let's you set all of a skill to use the obi, but exclude certain actions
 -- this is in a fifo order, so if you want an to exlcude a single action, but include all others of that skill, the action name should be above the skill
+-- this only is looked for in midcast
 _L['Weather-Overrides'] =
 {
 
 };
 
--- local variable that holds weather the player is currently casting, if so, we don't want to call status_change
-_L['player_casting'] = false;
+-- table to hold certain status overrides when we have certain debuffs on
+-- locks on cursna gear when we have doom, dt when terror'd, etc.
+-- key is buff name, with a table value with three keys
+-- the key to the table, i.e. the buff name, MUST match the casing of the buffactive table
+-- CASE SENSITIVE
+-- i.e. ['Doom'] = { ['Idle'] = true, ['Engaged'] = true, ['set_name'] = 'Doom' }
+-- sets should be prefixed with sets['Status-Overrides'][set_name];
+-- i.e. sets['Status-Overrides']['Doom'] = { };
+-- this will also go in priority in a fifo order
+-- this is only looked for in status_change and aftercast
+_L['Status-Debuff-Overrides'] = 
+{
+		['Doom'] = { Idle = true, Engaged = true, set_name = 'Doom' },
+	['Sleep'] = { Idle = false, Engaged = true, set_name = 'Sleep' },
+	['Terror'] = { Idle = true, Engaged = true, set_name = 'Terror' },
+	['Petrification'] = { Idle = true, Engaged = true, set_name = 'Petrification' },
+	['Stun'] = { Idle = true, Engaged = true, set_name = 'Stun' },
+};
+
 
 -- local table that holds which statues we want to have it call status_change
 -- we don't want it to call it when our status is event or locked or other
 -- these should be lower case and we'll do a string.lower() on player['status'] to keep it future proof
 _L['valid_statuses'] = T{ 'idle', 'engaged', 'resting' };
 
-
--- set pos for on screen texts
-
+	-- set pos for on screen texts
+--------------------------------------------------------------------------------------------------------------------------------------------------->
 local text_display = text.new();
 	text_display:font("Cambria");
 	text_display:size(16);
@@ -148,6 +188,7 @@ local text_display = text.new();
 	-- overlay of idle index for color changing
 
 	
+---------------------------------------------------------------------------------------------------------------------------------------------------<
 
 -- holds when the last time we called status change, so we can delay it, which hopefully helps lag issues in instance zones
 _L['last_status_change_call'] = os.time();
@@ -157,10 +198,11 @@ _L['last_status_change_call'] = os.time();
 _L['status_change_delay'] = 2.5;
 
 
+
+
 -- Called once on load. Used to define variables, and specifically sets
 function get_sets()
-	windower.send_command('input //gs org')
-	windower.send_command('input /lockstyleset 9')
+windower.send_command('input //gs org')
 	-- Sets are named in a very specific way to allow generic rules. The entire gearswap is controlled by the naming convention of the sets. 
 	-- This allows us to easily add in additional weapons, weapon skills, job abilities etc without needing to add new logic for equip swaps.
 	-- All that needs to be done is have the sets named correctly. 
@@ -170,12 +212,12 @@ function get_sets()
 	-- For 'status' sets:
 	-- sets['Status']['Weapon_index']['Idle_index'] = { };
 	-- i.e. sets['Idle']['Ragnarok']['pdt'] = { };
-	-- i.e. sets['Engaged']['Godhands']['high-acc'] = { };
+	-- i.e. sets['Engaged']['Ukonvasara']['high-acc'] = { };
 
 	-- For non-magic action sets:
 	-- sets['ActionType']['ActionName']['Weapon_Index'] = { };
 	-- i.e. sets['WeaponSkill']['Resolution']['Ragnarok'] = { };
-	-- i.e. sets['JobAbility']['Berserk']['Godhands'] = { };
+	-- i.e. sets['JobAbility']['Berserk']['Ukonvasara'] = { };
 
 	-- For magic actions we just add the 'when' at the begining and change ActionType to SpellType
 	-- sets['when']['SpellType']['SpellName']['WeaponIndex'] = { };
@@ -214,25 +256,23 @@ function get_sets()
 								legs="Malignance Tights",
 								feet="Malignance Boots",
 								neck="Loricate Torque +1",
-								waist="Moonbow Belt",
+								waist="Gishdubar Sash",
 								left_ear="Etiolation Earring",
-								right_ear="Genmei Earring",
+								right_ear="Arete del Luna",
 								left_ring="Defending Ring",
 								right_ring="Sheltered Ring",
-								back="Moonbeam Cape",
+								back="Solemnity Cape",
 								}
 	sets['DT'] = sets['Normal']
 	sets['Idle'] = {};
 	
 	sets['Idle']['Spharai'] = {main="Spharai",}
 	sets['Idle']['Spharai']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Spharai'] ,{})
-	sets['Idle']['Spharai']['DT'] = set_combine(sets['DT'],sets['Idle']['Spharai'] ,{})
+	sets['Idle']['Spharai']['Normal']['Boost'] = set_combine(sets['Normal'],sets['Idle']['Spharai']['Normal'] ,{waist="Ask Sash",})
 	
-	sets['Idle']['Godhands'] = {}
+	sets['Idle']['Godhands'] = {main="Godhands",}
 	sets['Idle']['Godhands']['Normal'] = set_combine(sets['Normal'] ,{main="Godhands",})
-	sets['Idle']['Godhands']['DT'] = set_combine(sets['DT'] ,{main="Godhands", sub="Utu Grip",})
-	
-	
+	sets['Idle']['Godhands']['Normal']['Boost'] = set_combine(sets['Normal'],sets['Idle']['Godhands']['Normal'] ,{waist="Ask Sash",})
 	--Engaged Sets--
 	
 	sets['Engaged'] = {};
@@ -242,15 +282,15 @@ function get_sets()
 	sets['Engaged']['Spharai']['Normal'] = {
 								main="Spharai",
 								ammo="Aurgelmir Orb +1",
-								head="Malignance Chapeau",
+								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
 								body="Ken. Samue +1",
-								hands="Malignance Gloves",
+								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
 								left_ear="Sherida Earring",
-								right_ear="Cessance Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
@@ -263,6 +303,10 @@ function get_sets()
 	sets['Engaged']['Spharai']['Normal']['Impetus'] = set_combine(sets['Engaged']['Spharai']['Normal'],{
 								Body="Bhikku Cyclas +1",
 								})
+	sets['Engaged']['Spharai']['Normal']['Counterstance']['Impetus'] = set_combine(sets['Engaged']['Spharai']['Normal'],{
+								Body="Bhikku Cyclas +1",feet="Hes. Gaiters +3",
+								})
+	
 	
 	sets['Engaged']['Spharai']['Accuracy'] = {						
 								main="Spharai",
@@ -274,12 +318,21 @@ function get_sets()
 								feet="Ken. Sune-Ate +1",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Digni. Earring",
-								right_ear="Telos Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
+	sets['Engaged']['Spharai']['Accuracy']['Counterstance'] = set_combine(sets['Engaged']['Spharai']['Accuracy'],{
+								feet="Hes. Gaiters +3",
+								})						
+	sets['Engaged']['Spharai']['Accuracy']['Impetus'] = set_combine(sets['Engaged']['Spharai']['Accuracy'],{
+								Body="Bhikku Cyclas +1",
+								})
+	sets['Engaged']['Spharai']['Accuracy']['Counterstance']['Impetus'] = set_combine(sets['Engaged']['Spharai']['Accuracy'],{
+								Body="Bhikku Cyclas +1",feet="Hes. Gaiters +3",
+								})							
 	
 	sets['Engaged']['Spharai']['Hybrid'] = {				
 								main="Spharai",
@@ -291,8 +344,8 @@ function get_sets()
 								feet="Malignance Boots",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Digni. Earring",
-								right_ear="Telos Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Defending Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
@@ -306,13 +359,13 @@ function get_sets()
 								hands="Malignance Gloves",
 								legs="Malignance Tights",
 								feet="Malignance Boots",
-								neck="Loricate Torque +1",
+								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Etiolation Earring",
-								right_ear="Genmei Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Defending Ring",
-								back="Moonbeam Cape",
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
 	
 
@@ -320,24 +373,29 @@ function get_sets()
 	sets['Engaged']['Godhands']['Normal'] = {
 								main="Godhands",
 								ammo="Aurgelmir Orb +1",
-								head="Malignance Chapeau",
+								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
 								body="Ken. Samue +1",
-								hands="Malignance Gloves",
+								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
 								legs="Ken. Hakama +1",
 								feet="Ken. Sune-Ate +1",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
 								left_ear="Sherida Earring",
-								right_ear="Cessance Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								}
-	sets['Engaged']['Spharai']['Normal']['Counterstance'] = set_combine(sets['Engaged']['Spharai']['Normal'],{
+							
+							
+	sets['Engaged']['Godhands']['Normal']['Counterstance'] = set_combine(sets['Engaged']['Godhands']['Normal'],{
 								feet="Hes. Gaiters +3",
-								})
+								})						
 	sets['Engaged']['Godhands']['Normal']['Impetus'] = set_combine(sets['Engaged']['Godhands']['Normal'],{
 								Body="Bhikku Cyclas +1",
+								})
+	sets['Engaged']['Godhands']['Normal']['Counterstance']['Impetus'] = set_combine(sets['Engaged']['Godhands']['Normal'],{
+								Body="Bhikku Cyclas +1",feet="Hes. Gaiters +3",
 								})
 	
 	sets['Engaged']['Godhands']['Accuracy'] = {					
@@ -350,13 +408,21 @@ function get_sets()
 								feet="Ken. Sune-Ate +1",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Digni. Earring",
-								right_ear="Telos Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
-	
+	sets['Engaged']['Godhands']['Accuracy']['Counterstance'] = set_combine(sets['Engaged']['Godhands']['Accuracy'],{
+								feet="Hes. Gaiters +3",
+								})						
+	sets['Engaged']['Godhands']['Accuracy']['Impetus'] = set_combine(sets['Engaged']['Godhands']['Accuracy'],{
+								Body="Bhikku Cyclas +1",
+								})
+	sets['Engaged']['Godhands']['Accuracy']['Counterstance']['Impetus'] = set_combine(sets['Engaged']['Godhands']['Accuracy'],{
+								Body="Bhikku Cyclas +1",feet="Hes. Gaiters +3",
+								})	
 	sets['Engaged']['Godhands']['Hybrid'] = {						
 								main="Godhands",
 								ammo="Staunch Tathlum +1",
@@ -367,8 +433,8 @@ function get_sets()
 								feet="Malignance Boots",
 								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Digni. Earring",
-								right_ear="Telos Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Defending Ring",
 								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
@@ -382,129 +448,141 @@ function get_sets()
 								hands="Malignance Gloves",
 								legs="Malignance Tights",
 								feet="Malignance Boots",
-								neck="Loricate Torque +1",
+								neck="Moonbeam Nodowa",
 								waist="Moonbow Belt",
-								left_ear="Etiolation Earring",
-								right_ear="Genmei Earring",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
 								right_ring="Defending Ring",
-								back="Moonbeam Cape",
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
 								
 	
-	sets['WeaponSkill'] = {};
-	
-	sets['WeaponSkill']['Victory Smite'] = {				
+	sets['WeaponSkill'] = {		
 								ammo="Knobkierrie",
-								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								hands={ name="Ryuo Tekko", augments={'DEX+10','Accuracy+20','"Dbl.Atk."+3',}},
-								legs="Hiza. Hizayoroi +2",
-								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
-								neck="Fotia Gorget",
-								waist="Moonbow Belt",
-								left_ear="Sherida Earring",
-								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
-								left_ring="Niqmaddu Ring",
-								right_ring="Begrudging Ring",
-								back={ name="Segomo's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
-								};
-
-	
-	sets['WeaponSkill']["Ascetic's Furry"] = {				
-								ammo="Knobkierrie",
-								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								hands={ name="Ryuo Tekko", augments={'DEX+10','Accuracy+20','"Dbl.Atk."+3',}},
-								legs="Ken. Hakama",
-								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
-								neck="Fotia Gorget",
-								waist="Moonbow Belt",
-								left_ear="Sherida Earring",
-								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
-								left_ring="Niqmaddu Ring",
-								right_ring="Begrudging Ring",
-								back={ name="Segomo's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
-								};
-
-	
-	sets['WeaponSkill']["Raging Fists"] = {				
-								ammo="Knobkierrie",
-								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								hands={ name="Ryuo Tekko", augments={'DEX+10','Accuracy+20','"Dbl.Atk."+3',}},
-								legs="Hiza. Hizayoroi +2",
-								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body={ name="Tatena. Harama. +1", augments={'Path: A',}},
+								hands={ name="Tatena. Gote +1", augments={'Path: A',}},
+								legs="Ken. Hakama +1",
+								feet="Ken. Sune-Ate +1",
 								neck="Fotia Gorget",
 								waist="Moonbow Belt",
 								left_ear="Sherida Earring",
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
+								};
+	
+	sets['WeaponSkill']['Victory Smite'] = {				
+								ammo="Knobkierrie",
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body="Ken. Samue +1",
+								hands={ name="Ryuo Tekko", augments={'DEX+10','Accuracy+20','"Dbl.Atk."+3',}},
+								legs="Ken. Hakama +1",
+								feet="Ken. Sune-Ate +1",
+								neck="Fotia Gorget",
+								waist="Moonbow Belt",
+								left_ear="Sherida Earring",
+								right_ear="Odr Earring",
+								left_ring="Niqmaddu Ring",
+								right_ring="Gere Ring",
 								back={ name="Segomo's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
 								};
-
+	sets['WeaponSkill']['Victory Smite']['Impetus'] = set_combine(sets['WeaponSkill']['Victory Smite'] ,{
+								Body="Bhikku Cyclas +1",
+								});
+	
+	
+	sets['WeaponSkill']["Raging Fists"] = {				
+								ammo="Knobkierrie",
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body={ name="Tatena. Harama. +1", augments={'Path: A',}},
+								hands={ name="Tatena. Gote +1", augments={'Path: A',}},
+								legs="Ken. Hakama +1",
+								feet="Ken. Sune-Ate +1",
+								neck="Fotia Gorget",
+								waist="Moonbow Belt",
+								left_ear="Sherida Earring",
+								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
+								left_ring="Niqmaddu Ring",
+								right_ring="Gere Ring",
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
+								};
+	sets['WeaponSkill']["Raging Fists"]['Impetus'] = set_combine(sets['WeaponSkill']["Raging Fists"] ,{
+								Body="Bhikku Cyclas +1",
+								});
 	
 	
 	sets['WeaponSkill']['Howling Fists'] = {					
 								ammo="Knobkierrie",
-								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								hands={ name="Ryuo Tekko", augments={'DEX+10','Accuracy+20','"Dbl.Atk."+3',}},
-								legs="Hiza. Hizayoroi +2",
-								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
+								head="Ken. Jinpachi",
+								body={ name="Tatena. Harama. +1", augments={'Path: A',}},
+								hands={ name="Tatena. Gote +1", augments={'Path: A',}},
+								legs={ name="Tatena. Haidate +1", augments={'Path: A',}},
+								feet="Ken. Sune-Ate +1",
 								neck="Fotia Gorget",
 								waist="Moonbow Belt",
 								left_ear="Sherida Earring",
 								right_ear={ name="Moonshade Earring", augments={'Accuracy+4','TP Bonus +250',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Gere Ring",
-								back={ name="Segomo's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
+	sets['WeaponSkill']["Howling Fists"]['Impetus'] = set_combine(sets['WeaponSkill']["Howling Fists"] ,{
+								Body="Bhikku Cyclas +1",
+								});
 
 	sets['WeaponSkill']['Shijin Spiral'] = {					
-								ammo="Knobkierrie",
-								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
-								legs="Jokushu Haidate",
+								ammo="Aurgelmir Orb +1",
+								head={ name="Blistering Sallet +1", augments={'Path: A',}},
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs={ name="Tatena. Haidate +1", augments={'Path: A',}},
 								feet="Ken. Sune-Ate +1",
-								neck="Caro Necklace",
+								neck="Fotia Gorget",
 								waist="Moonbow Belt",
 								left_ear="Sherida Earring",
-								right_ear="Mache Earring",
+								right_ear="Odr Earring",
 								left_ring="Niqmaddu Ring",
-								right_ring="Regal Ring",
-								back={ name="Segomo's Mantle", augments={'STR+20','Accuracy+20 Attack+20','Weapon skill damage +10%',}},
+								right_ring="Gere Ring",
+								back={ name="Segomo's Mantle", augments={'DEX+20','Accuracy+20 Attack+20','Accuracy+10','"Dbl.Atk."+10',}},
 								};
-
+	sets['WeaponSkill']["Shijin Spiral"]['Impetus'] = set_combine(sets['WeaponSkill']["Shijin Spiral"] ,{
+								Body="Bhikku Cyclas +1",
+								});
 	
 							
 	--Job Abilities--
 	
 	sets['JobAbility'] = {};
 	sets['JobAbility']['Chakra'] = { 
-								ammo="Iron Gobbet",
-								head="Genmei Kabuto",
-								body="Hiza. Haramaki +2",
+								ammo="Aurgelmir Orb +1",
+								head="Ken. Jinpachi",
+								body="Anch. Cyclas +2",
 								hands={ name="Hes. Gloves +1", augments={'Enhances "Invigorate" effect',}},
-								legs="Hiza. Hizayoroi +2",
+								legs={ name="Tatena. Haidate +1", augments={'Path: A',}},
 								feet="Hiza. Sune-Ate +2",
-								neck="Unmoving Collar +1",
-								left_ear="Odnowa Earring +1",
-								right_ear="Odnowa Earring",
+								neck={ name="Unmoving Collar +1", augments={'Path: A',}},
+								waist="Moonbow Belt",
+								left_ear="Genmei Earring",
+								right_ear={ name="Odnowa Earring +1", augments={'Path: A',}},
 								left_ring="Niqmaddu Ring",
 								right_ring="Regal Ring",
 								back="Tantalic Cape",
 								};
 	sets['JobAbility']['Hundred Fists'] = {legs="Hes. Hose +1",};
-	sets['JobAbility']['Boost'] = {waist="Ask Sash",};
+	sets['JobAbility']['Boost'] = {Hands="Anch. Gloves +1",waist="Ask Sash",};
+	sets['JobAbility']['Dodge'] = {feet="Anch. Gaiters +2",};
+	sets['JobAbility']['Focus'] = {head="Anchor. Crown +1",};
+	sets['JobAbility']['Dodge'] = {feet="Hes. Gaiters +3",};
 	sets['JobAbility']['Provoke'] = { 
 								ammo="Iron Gobbet",
 								head="Halitus Helm",
 								hands="Kurys Gloves",
 								neck="Unmoving Collar +1",
 								waist="Sinew Belt",
+								feet="Ahosi Leggings",
 								left_ear="Cryptic Earring",
 								right_ear="Friomisi Earring",
 								left_ring="Provocare Ring",
@@ -563,6 +641,9 @@ function get_sets()
 								waist="Gishdubar Sash",
 								legs="Shabti Cuisses +1",
 								}; 
+	sets['Status-Overrides']['Boost'] = {
+								waist="Ask Sash",
+								}; 							
 	
 	sets['Status-Overrides']['Sleep'] = set_combine(sets['DT'], {head="Frenzy Sallet"});
 	
@@ -586,8 +667,10 @@ function get_sets()
 	windower.send_command('bind f10 gs c cycle idle') --toggle idle sets dt/refresh/regen etc--
 	windower.send_command('bind f9 gs c cycle engaged') --tp set swap acc/hybrid/dt etc--			
 	windower.send_command('bind f12 gs c cycle weapon') --weapon swap keybind-- 
+	windower.send_command('bind !f12 gs c cycle Autoequip') --Toggles auto equip of gear-- 
 	windower.send_command('input /echo [ Job Changed to Monk ]')  --change to the job your using--
-	windower.send_command('wait 5; input /lockstyleset 1')  -- need to make lockstyle --
+	windower.send_command('wait 5; input /lockstyleset 20')  -- need to make lockstyle --
+	windower.send_command('wait 1; input //jc sub WAR') -- changes subjob to sam
 	windower.send_command('input /macro book 6; wait .1; input /macro set 1')  -- changes macro pallet to jerb --
 	send_command('bind ^home gs c warpring')  --control+home
 	send_command('bind ^end gs c Demring')	--control+end
@@ -598,11 +681,65 @@ end
 
 -- Called when this job file is unloaded (eg: job change)
 function user_unload()
-
+	
+end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	
+function filtered_action(spell)
+		-- if player.equipment.main == "Shining One" then
+			-- if spell.english=="Upheaval" then
+				-- windower.send_command('input /ws "Impulse Drive" <t>')
+			-- elseif 	spell.english=="Fell Cleave" then
+				-- windower.send_command('input /ws "Sonic Thrust" <t>')
+			-- elseif 	spell.english=="Ukko's Fury" then
+				-- windower.send_command('input /ws "Stardiver" <t>')
+			-- end
+		-- end
+		-- if player.equipment.main == "Naegling" then
+			-- if spell.english=="Upheaval" then
+				-- windower.send_command('input /ws "Savage Blade" <t>')
+			-- elseif 	spell.english=="Fell Cleave" then
+				-- windower.send_command('input /ws "Circle Blade" <t>')
+			-- end
+		-- end
 end
 
+function sub_job_change(new,old)
+	status_change()
+end
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- Passes the new and old statuses
 function status_change(new, old)
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	-- if player.equipment.main == 'Naegling' and player.equipment.sub == 'empty' or player.equipment.sub == 'Adapa Shield' then
+		-- if player.sub_job == "NIN" or player.sub_job == "DNC" then
+			-- equip({sub="Reikiko"})
+		-- else  
+			-- equip({sub="Adapa Shield"})
+		-- end
+	-- end
+	
+	-- if player.hpp <= 50 then
+		-- if _L['Engaged_index'] ~= 'DT' then
+			-- _L['Engaged_index'] = 'DT'
+		-- end
+	-- else
+		-- if _L['Engaged_index'] ~= 'Normal' then
+			-- _L['Engaged_index'] = 'Normal'
+		-- end	
+	-- end	
+	
+	-- if buffactive['Berserk'] and not buffactive['Defender'] then
+		-- windower.ffxi.cancel_buff(56);
+		-- windower.add_to_chat('Dropping Berserk cause Defender dropped')
+	-- end	
+	if _L['BoostUP'] == true and not buffactive['Boost'] and _L['BuffUp'] == false then
+		_L['BoostUP'] = false
+	end 
+	
+	
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 	-- hold which set to equip in a variable and only call equip() once, that way we can pass status overrides too
 	local set_to_equip;
 	-- check to see if the new status is even defined
@@ -617,45 +754,29 @@ function status_change(new, old)
 			end
 		-- check for just status index
 		elseif (sets[new][_L[string.format('%s_index', new)]] ~= nil) then
-			set_to_equip = sets[new][_L[string.format('%s_index', new)]];
+			if (sets[new][_L[string.format('%s_index', new)]][_L['Weapon_index']] ~= nil) then
+				set_to_equip = sets[new][_L[string.format('%s_index', new)]][_L['Weapon_index']];
+			else
+				set_to_equip = sets[new][_L[string.format('%s_index', new)]];
+			end
 		else 
 			-- no luck, just equip sets[status]
 			set_to_equip = sets[new];
 		end
 	end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
 	
-	-- if count >= 40 and not count < 40 then
-			-- HasteNumber = 'HasteHigh'
-		-- if (set_to_equip['HasteHigh'] ~= nil) then
-			-- set_to_equip = set_to_equip['HasteHigh'];
-			
-		-- end
-	-- elseif count >= 25 and not count < 25 then
-		-- HasteNumber = 'HasteMid'
-		-- if (set_to_equip['HasteMid'] ~= nil) then
-			-- set_to_equip = set_to_equip['HasteMid'];
-			
-		-- end
-	-- elseif count < 25 then
-		-- HasteNumber = 'HasteLow'
-		-- if (set_to_equip['HasteLow'] ~= nil) then
-			-- set_to_equip = set_to_equip['HasteLow'];
-			
-		-- end	
-	-- end
-	if buffactive['Impetus'] then
-		if (set_to_equip['Impetus'] ~= nil) then
-			set_to_equip = set_to_equip['Impetus'];	
+	if _L['BoostUP'] == true then
+	
+		if player.status == 'Idle' then
+			if (set_to_equip['Boost'] ~= nil) then
+				set_to_equip = set_to_equip['Boost'];
+			end
 		end
-	end
-	if buffactive['Counterstance'] then
-		if (set_to_equip['Counterstance'] ~= nil) then
-			set_to_equip = set_to_equip['Counterstance'];	
-		end
-	end
 	
-	
-	
+	end 
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
+	-- check for aftermath
 	if (buffactive['Aftermath'] or buffactive['Aftermath: Lv.1'] or buffactive['Aftermath: Lv.2'] or buffactive['Aftermath: Lv.3']) then
 		-- loop through override table
 		for key, value in pairs(_L['Aftermath-Overrides']) do
@@ -673,6 +794,23 @@ function status_change(new, old)
 				elseif (buffactive['Aftermath: Lv.3'] and value[3]) then
 					if (set_to_equip['Aftermath: Lv.3'] ~= nil) then
 						set_to_equip = set_to_equip['Aftermath: Lv.3'];	
+					end
+				end
+			end
+		end
+	end
+
+	-- check for buffs we care about when idle or engaged
+	if (_L['Status-Buff-Overrides'] ~= nil) then
+		-- loop through
+		for key, value in pairs(SortTable(_L['Status-Buff-Overrides'])) do
+			-- check to see if we have the buff active that we are looking to override
+			if (buffactive[value]) then
+				-- check to see if they have the status defined, and if they do, if it's true
+				if (_L['Status-Buff-Overrides'][value][new] ~= nil and _L['Status-Buff-Overrides'][value][new]) then
+					-- check to see if they have a set defined for this override
+					if (set_to_equip[value] ~= nil) then
+						set_to_equip = set_to_equip[value];
 					end
 				end
 			end
@@ -701,28 +839,28 @@ function status_change(new, old)
 
 	-- lastly, check for status overrides, loop through all overrides
 	-- hold this as a variable too
-	local set_override_name;
+	local set_overrides_name;
 	-- checking this last allows us to equip our normal buff sets, and then override 
-	for key, value in pairs(_L['Status-Buff-Overrides']) do
+	for key, value in pairs(SortTable(_L['Status-Debuff-Overrides'])) do
 		-- check to see if we have the buff active
-		if (buffactive[key]) then
+		if (buffactive[value]) then
 			-- check to see if we want to use the override in the current new status
-			if (value[string.lower(new)] ~= nil and value[string.lower(new)]) then
-				if (sets['Status-Overrides'] ~= nil and sets['Status-Overrides'][value['set_name']] ~= nil) then
-					set_override_name = sets['Status-Overrides'][value['set_name']];
+			if (_L['Status-Debuff-Overrides'][value][new] ~= nil and _L['Status-Debuff-Overrides'][value][new]) then
+				if (sets['Status-Overrides'] ~= nil and sets['Status-Overrides'][_L['Status-Debuff-Overrides'][value]['set_name']] ~= nil) then
+					set_overrides_name = sets['Status-Overrides'][_L['Status-Debuff-Overrides'][value]['set_name']];
 				end
 			end
 		end
 	end
 
 	-- if we found an override set, equip that with the normal set
-	if (set_override_name ~= nil) then
-		equip(set_to_equip, set_override_name);
+	if (set_overrides_name ~= nil) then
+		equip(set_to_equip, set_overrides_name);
 	else
 		-- just equip the normal set
 		equip(set_to_equip);
 	end
-
+	
 	
 	if _L['Engaged_index'] == 'DT' then 
         _L['EngagedColor'] = '(255, 0, 0)'
@@ -744,6 +882,7 @@ function status_change(new, old)
 	text_display:text(textcolors)
 	
 		text_display:update();
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 end
 
 -- Passes the resources line for the spell with a few modifications. 
@@ -751,8 +890,12 @@ end
 -- cancel_spell(), verify_equip(), force_send(), and cast_delay() are implemented in this phase. 
 -- Does not occur for items that bypass the outgoing text buffer (like using items from the menu)..
 function precast(spell)
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	if spell.english=="Boost" then
+		_L['BoostUP'] = true
+		_L['BuffUp'] = true
+	end
 	-- check to see if debuff is on and cancels spell to stop gear from changing
-	
 	if buffactive['sleep'] and spell['type'] == 'WeaponSkill' then
 		equip(sets['Status-Overrides']['Sleep'])
 		cancel_spell()
@@ -776,8 +919,9 @@ function precast(spell)
 		cancel_spell()
 		return
 	end
+	_L['PlayerTp'] = player.tp
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 
-	_L['player_casting'] = true;
 	-- check for buff cancels before we even look for sets
 	for key, value in pairs(_L['Buff-Cancels']) do
 		-- check to see if the current spell is one we want to cancel something for
@@ -791,6 +935,7 @@ function precast(spell)
 			end
 		end
 	end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
 	--checks for ja to stop if buff active
 	for key, value in pairs(_L['Buff-To-Prevent-Spell']) do
 		-- check to see if the current spell is one we want to cancel something for
@@ -805,6 +950,7 @@ function precast(spell)
 			end
 		end
 	end
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 	equip(get_action_set(spell, 'precast'));
 end
 
@@ -847,46 +993,38 @@ end
 --Passes the resources line for the spell with a few modifications. Occurs when the “result” action packet is received from the server, 
 --or an interruption of some kind is detected.
 function aftercast(spell)
-	_L['player_casting'] = false;
-	
-
-	status_change(player['Status'], 'casting');
-	local Timer = player.tp
-	if spell.english == 'Full Break' then
-		if Timer == 3000 then
-			send_command('timers create "Full Break" 720 down')
-		elseif Timer >= 2000 then
-			send_command('timers create "Full Break" 360 down')
-		else
-			send_command('timers create "Full Break" 180 down')
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+		-- print('aftercast pet type')
+		-- print(spell['type'])
+		---------------------------------------------------------------------------------------------------------------------------------------------------<		
+		if not (midaction() or pet_midaction()) then
+		status_change(player['status'], 'casting');
 		end
-	elseif spell.english == 'Armor Break' then
-		if Timer == 3000 then
-			send_command('timers create "Armor Break" 540 down')
-		elseif Timer >= 2000 then
-			send_command('timers create "Armor Break" 360 down')
-		else
-			send_command('timers create "Armor Break" 180 down')
-		end	
-	elseif spell.english == 'Weapon Break' then
-		if Timer == 3000 then
-			send_command('timers create "Weapon Break" 300 down')
-		elseif Timer >= 2000 then
-			send_command('timers create "Weapon Break" 240 down')
-		else
-			send_command('timers create "Weapon Break" 180 down')
-		end	
-	elseif spell.english == 'Shield Break' then
-		if Timer == 3000 then
-			send_command('timers create "Shield Break" 300 down')
-		elseif Timer >= 2000 then
-			send_command('timers create "Shield Break" 240 down')
-		else
-			send_command('timers create "Shield Break" 180 down')
-		end	
-	end
+		if spell.english == "Boost" and _L['BuffUp'] == true then
+			send_command('wait 5;gs c cycle buffoff')
+		end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 end
 
+-- Passes the resources line for the spell with a few modifications. Occurs when the “readies” action packet is received for your pet
+function pet_midcast(spell)
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
+	-- print('pet move type')
+	-- print(spell['type'])
+	-- print('pet move name')
+	-- print(spell['name'])
+		---------------------------------------------------------------------------------------------------------------------------------------------------<	
+	equip(get_action_set(spell, 'midcast'));
+end
+
+-- Passes the resources line for the spell with a few modifications. Occurs when the “result” action packet is received for your pet.
+function pet_aftercast(spell)
+
+	status_change(player['status'], 'pet_ability');
+	
+end
 -- Passes any self commands, which are triggered by //gs c <command> (or /console gs c <command> in macros)
 function self_command(command)
 	-- This is where we handle set cycles and toggles. These can again be whatever we want as long as things match
@@ -897,15 +1035,28 @@ function self_command(command)
 	-- //gs c cycle weapon
 	-- or user wants to auto detect weapon and set the weapon index as that
 	-- //gs c auto weapon
+	if (command == 'cycle Autoequip') then
+		if _L['Autoequip'] == true then
+			_L['Autoequip'] = false
+			windower.add_to_chat(167, 'Auto Equipping Off')
+		else
+			enable('main','sub','range','ammo','head','neck','ear1','ear2','body','hands','left_ring','right_ring','back','waist','legs','feet')
+			_L['Autoequip'] = true
+			windower.add_to_chat(158, 'Auto Equipping On')
+		end	
+	end
+	if (command == 'cycle buffoff') then
+		_L['BuffUp'] = false
+	end
 	if command =='shadows' then
-			if windower.ffxi.get_spell_recasts()[339] == 0 then
-				windower.send_command('input /ma "Utsusemi: Ni" <me>')
-			elseif windower.ffxi.get_spell_recasts()[339] > 0 and windower.ffxi.get_spell_recasts()[338] == 0 then
-				windower.send_command('input /ma "Utsusemi: Ichi" <me>')
+		if windower.ffxi.get_spell_recasts()[339] == 0 then
+			windower.send_command('input /ma "Utsusemi: Ni" <me>')
+		elseif windower.ffxi.get_spell_recasts()[339] > 0 and windower.ffxi.get_spell_recasts()[338] == 0 then
+			windower.send_command('input /ma "Utsusemi: Ichi" <me>')
 		end
-	
 	end
 	if (command == 'cycle idle') then
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
 		if player.status == 'Engaged' then
 			if _L['DT'] == false then
 				CurrentEngaged = _L['Engaged_index']
@@ -914,16 +1065,18 @@ function self_command(command)
 			elseif _L['DT'] == true then	
 				_L['Engaged_index'] = CurrentEngaged
 				_L['DT'] = false
+				_L['Idle_index'] = _L['Idle-Modes'][1];
 			
 			end
-		else	
+		else
+		
 		-- get the index of the current idle index
 		local index = IndexOf(_L['Idle-Modes'], _L['Idle_index']);
 		-- make sure it's valid. 
 		if (index == -1) then
 			index = 1;
 		end
-		
+
 		-- if it's the last one, set it to 1, else increment
 		if (index == #_L['Idle-Modes']) then
 			index = 1;
@@ -933,13 +1086,17 @@ function self_command(command)
 
 		-- set the new index
 		_L['Idle_index'] = _L['Idle-Modes'][index];
-		end	
+		end
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
 		status_change(player['status'], 'none');
 	elseif (command == 'cycle engaged') then
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
 		_L['DT'] = false
 		
 			
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
+	
 		-- get the index of the current engaged index
 		local index = IndexOf(_L['Engaged-Modes'], _L['Engaged_index']);
 		-- make sure it's valid
@@ -956,13 +1113,16 @@ function self_command(command)
 
 		-- set the new index
 		_L['Engaged_index'] = _L['Engaged-Modes'][index];
-		
-		
-		
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
+		
+		
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
 		status_change(player['status'], 'none');
 	elseif (command == 'cycle weapon') then
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
 		_L['DT'] = false
+	---------------------------------------------------------------------------------------------------------------------------------------------------<	
 		-- get the index of the current weapon index
 		local index = IndexOf(_L['Weapon-Modes'], _L['Weapon_index']);
 		-- make sure it's valid
@@ -979,8 +1139,6 @@ function self_command(command)
 
 		-- set the new index
 		_L['Weapon_index'] = _L['Weapon-Modes'][index];
-		
-		
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
 		status_change(player['status'], 'none');
 	elseif (command == 'auto weapon') then
@@ -997,18 +1155,30 @@ function self_command(command)
 		end
 	elseif (command == 'force status change') then
 		status_change(player['status'], 'none');
-	end
+	end --------------------------------------------------------------------------------------------------------------------------------------------------->
+	if command == 'Tsolo' then
+			windower.send_command('input //tru solo')
+	end		
 	--ring locks--
 		if command == 'warpring' then
 			equip({left_ring="Warp Ring"})
+			_L['Autoequip'] = false
 			send_command('gs disable left_ring;wait 10;input /item "Warp Ring" <me>;wait 1;input /item "Warp Ring" <me>;wait 1;input /item "Warp Ring" <me>;wait 10;gs enable left_ring')
+			send_command('wait 25;gs c cycle Autoequip')
 		elseif command == 'Demring' then
 			equip({right_ring="Dim. Ring (Dem)"})
-			send_command('gs disable right_ring;wait 10;input /item "Dim. Ring (Dem)" <me>;wait 1;input /item "Dim. Ring (Dem)" <me>;wait 1;input /item "Dim. Ring (Dem)" <me>;wait 10;gs enable right_ring')	
-		end	
+			_L['Autoequip'] = false
+			send_command('gs disable right_ring;wait 10;input /item "Dim. Ring (Dem)" <me>;wait 1;input /item "Dim. Ring (Dem)" <me>;wait 1;input /item "Dim. Ring (Dem)" <me>;wait 10;gs enable right_ring')
+			send_command('wait 25;gs c cycle Autoequip')
+		end	--------------------------------------------------------------------------------------------------------------------------------------------------<
 end
 
 function get_action_set(spell, actionTime)
+	-- if (player.sub_job == 'NIN' or player.sub_job == 'DNC') and player.equipment.main == 'Naegling' and player.equipment.sub == 'empty' then
+		-- equip({sub="Reikiko"})
+	-- else  
+		-- equip({sub="Adapa Shield"})
+	-- end 
 	-- hold the set to equip at the end
 	-- this let's us do buff checks and other manipulations on the set
 	local set_to_equip;
@@ -1093,8 +1263,7 @@ function get_action_set(spell, actionTime)
 		else
 			set_to_equip = (sets[actionTime]);
 		end
-	end
-	
+	end ---------------------------------------------------------------------------------------------------------------------------------------------------------------->
 	-- if count >= 40 and not count < 40 then
 			-- HasteNumber = 'HasteHigh'
 		-- if (set_to_equip['HasteHigh'] ~= nil) then
@@ -1114,17 +1283,21 @@ function get_action_set(spell, actionTime)
 			
 		-- end	
 	-- end
-	if buffactive['Impetus'] then
-		if (set_to_equip['Impetus'] ~= nil) then
-			set_to_equip = set_to_equip['Impetus'];	
+	if buffactive['Samurai Roll'] then
+		if (set_to_equip['SamRollOn'] ~= nil) then
+			set_to_equip = set_to_equip['SamRollOn'];	
+		end
+	else
+		if (set_to_equip['SamRollOff'] ~= nil) then
+			set_to_equip = set_to_equip['SamRollOff'];	
 		end
 	end
-	if buffactive['Counterstance'] then
-		if (set_to_equip['Counterstance'] ~= nil) then
-			set_to_equip = set_to_equip['Counterstance'];	
+	if buffactive['Brazen Rush'] then
+		if (set_to_equip['Brazen Rush'] ~= nil) then
+			set_to_equip = set_to_equip['Brazen Rush'];	
 		end
-	end
--- check for aftermath
+	end -----------------------------------------------------------------------------------------------------------------------------------------------------------------<
+	-- check for aftermath
 	if (buffactive['Aftermath'] or buffactive['Aftermath: Lv.1'] or buffactive['Aftermath: Lv.2'] or buffactive['Aftermath: Lv.3']) then
 		-- loop through override table
 		for key, value in pairs(_L['Aftermath-Overrides']) do
@@ -1149,7 +1322,7 @@ function get_action_set(spell, actionTime)
 	end
 	
 	-- holds weather we are going to override the set we found above with a buff specific set
-	local buff_override = false;
+	local buff_overrides = false;
 	local buff_name = '';
 	
 	-- loop through the overrides
@@ -1164,7 +1337,7 @@ function get_action_set(spell, actionTime)
 					-- check to see if the precast or midcast is what we want
 					--if ((actionTime == 'precast' and value['precast']) or (actionTime == 'midcast' and value['midcast'])) then
 					if (value[actionTime]) then
-						buff_override = true;
+						buff_overrides = true;
 						buff_name = buff:trim();
 						break;
 					end
@@ -1174,7 +1347,7 @@ function get_action_set(spell, actionTime)
 	end
 	
 	-- did we find a buff override and does that set exist?
-	if (buff_override and set_to_equip[buff_name] ~= nil) then
+	if (buff_overrides and set_to_equip[buff_name] ~= nil) then
 		set_to_equip = set_to_equip[buff_name];
 	end
 
@@ -1224,20 +1397,37 @@ function IndexOf(t, value)
 	return -1;
 end
 
+function SortTable(t, sf)
+	local keys, length = { }, 0;
+
+	for key, _ in pairs(t) do
+		length = length + 1;
+		keys[length] = key;
+	end
+
+	table.sort(keys, sf);
+
+	return keys;
+end
+
 -- intercept out going packets to look for player sync
 windower.register_event('outgoing chunk', function(id, original, modified, injected, blocked)
+	if _L['Autoequip'] == true then
 	-- 0x015 = Player Information Sync
-	if (id == 0x015) then
-		-- check to make sure we've delayed it long enough
-		if (os.time() >= (_L['last_status_change_call'] + _L['status_change_delay'])) then
-			-- make sure our current status isn't nil and a valid one
-			if (player['status'] ~= nil and _L['valid_statuses']:contains(string.lower(player['status']))) then
-				-- make sure we're not casting
-				if (not _L['player_casting']) then
-					-- call status_change with our current status
-					status_change(player['status'], 'none');
+		if (id == 0x015) then
+			-- check to make sure we've delayed it long enough
+			if (os.time() >= (_L['last_status_change_call'] + _L['status_change_delay'])) then
+				-- make sure our current status isn't nil and a valid one
+				if (player['status'] ~= nil and _L['valid_statuses']:contains(string.lower(player['status']))) then
+					-- make sure we're not casting
+					if not (midaction() or pet_midaction()) then
+						-- call status_change with our current status
+						status_change(player['status'], 'none');
+
+						_L['last_status_change_call'] = os.time();
+					end
 				end
 			end
 		end
-	end
+	end	
 end);
