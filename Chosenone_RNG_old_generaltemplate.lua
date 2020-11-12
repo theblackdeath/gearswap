@@ -8,15 +8,16 @@ local _L = { };
 --------------------------------------------------------------------------------------------------------------------------------------------------->
 _L['DT'] = false
 _L['Autoequip'] = true
-_L_Flurry = "f0"
-_L['Flurry_Visual'] = "Off"
 
 _L['areasCities'] = S{"Ru'Lude Gardens","Upper Jeuno","Lower Jeuno","Port Jeuno",
 	"Port Windurst","Windurst Waters","Windurst Woods","Windurst Walls","Heavens Tower",
 	"Port San d'Oria","Northern San d'Oria","Southern San d'Oria","Port Bastok",
 	"Bastok Markets","Bastok Mines","Metalworks","Aht Urhgan Whitegate","Tavanazian Safehold",
 	"Nashmau","Selbina","Mhaura","Norg","Eastern Adoulin","Western Adoulin","Kazham",}
+_L['ElShot'] = S{'Fire Shot','Ice Shot','Wind Shot','Earth Shot','Thunder Shot','Water Shot','Light Shot','Dark Shot'}
 
+_L_Flurry = "f0"
+_L_Flurry_Visual = "Off"
 _L_O_Belt_distance = 8
 ---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- set cycle toggles
@@ -25,19 +26,18 @@ _L['Idle-Modes'] = { 'Normal','DT' };
 _L['Ranged-Modes'] = { 'Normal','Accuracy' };
 _L['Engaged-Modes'] = { "Normal", "Accuracy", "Hybrid", "DT"};
 _L['Weapon-Modes'] = { "Gastraphetes","Fomalhaut","Armageddon","Ataktos" };
-_L['Melee-Weapon-Modes'] = { "MRanged","MMelee","MMagic" };
 
 -- set defaults, shouldn't need to change these, makes default mode whatever mode is defined first.
 _L['Ranged_index'] = _L['Ranged-Modes'][1];
 _L['Idle_index'] = _L['Idle-Modes'][1];
 _L['Engaged_index'] = _L['Engaged-Modes'][1];
 _L['Weapon_index'] = _L['Weapon-Modes'][1];
-_L['Melee_Weapon_index'] = _L['Melee-Weapon-Modes'][1];
+
 -- table for ultimate weapon aftermath overrides
 -- the keys to this table should be the weapon you want to use aftermath overrides for
 -- NOTE: This will check against player['equipment']['main'] gs/windower API, and NOT weapon modes, in the case you don't use weapon modes in you sets
 -- value will be a table, containing three values, for AM1/2/3 respectively.
--- to use the set override, simply add ['Aftermath: Lv.x'] to the end of the set
+-- to use the set overrides, simply add ['Aftermath: Lv.x'] to the end of the set
 -- i.e. to use Overrides Liberator level 3, but no other AM level, in this table: ['Liberator'] = { false, false, true }
 -- then as your sets, you might have sets['Engaged']['High-ACC']['Aftermath: Lv.3'] = { };
 -- this will be taken into account for status_change, precast, midcast, and aftercast
@@ -46,15 +46,15 @@ _L['Melee_Weapon_index'] = _L['Melee-Weapon-Modes'][1];
 -- happens in both precast, midcast, aftercast and status_change
 _L['Aftermath-Overrides'] =
 {
-	
+
 };
 
 -- this table holds actions that we want to do something a little different for when certain buffs are up
--- key = the action name to override 
+-- key = the action name to overrides 
 -- value = table with three keys, { ['precast'] = true|false, ['midcast'] = true|false, ['buff_name'] = string };
 -- i.e. ["Ukko's Fury"] = { ['precast'] = true, ['midcast'] = false, ['buff_name'] = 'Berserk' }
 -- i.e. ['Drain II'] = { ['precast'] = false, ['midcast'] = true, ['buff_name'] = 'Dark Seal' }
--- you can have multiple buffs override the same action. it's very important to not have extra spaces around the |
+-- you can have multiple buffs overrides the same action. it's very important to not have extra spaces around the |
 -- i.e. ['Rudra\'s Storm'] = { ['precast'] = true, ['midcast'] = true, ['buff_name'] = 'Sneak Attack|Trick Attack' }
 -- weaponskill and job abilities should use 'precast = true' since they don't have a midcast to them
 -- The casing should match whatever is in the windower resources
@@ -62,17 +62,17 @@ _L['Aftermath-Overrides'] =
 -- i.e. sets['WeaponSkill']['Ukko\'s Fury'] = { }; turns into sets['WeaponSkill']['Ukko\'s Fury']['Berserk'] = { };
 -- happens in both precast and midcast
 _L['Buff-Overrides'] =
-{	["Ranged"] = { ['precast'] = true, ['midcast'] = false, ['buff_name'] = 'Flurry' },
+{
 	["Ranged"] = { ['precast'] = false, ['midcast'] = true, ['buff_name'] = 'Double Shot' },
 	["Ranged"] = { ['precast'] = false, ['midcast'] = true, ['buff_name'] = 'Barrage' },
 	["Ranged"] = { ['precast'] = false, ['midcast'] = true, ['buff_name'] = 'Overkill' },
 };
 
--- this table holds buffs that we want to check for when not doing an action (i.e. idle, engaged, resting) and potentially override a base set
+-- this table holds buffs that we want to check for when not doing an action (i.e. idle, engaged, resting) and potentially overrides a base set
 -- key = the buff name
 -- value = table with keys matching status name, and values being boolean
--- i.e. ['Samurai Roll'] = { ['Engaged'] = true }
--- i.e. ['Sublimation'] = { ['Idle'] = true }
+-- i.e. ['Samurai Roll'] = { ['engaged'] = true }
+-- i.e. ['Sublimation'] = { ['idle'] = true }
 -- and your status set might look like sets['Engaged']['acc']['Aftermath: Lv. 2']['Samurai Roll'] = { };
 -- this will loop the entire table, appending buffs as it finds the buff active and the set existing
 -- this means if you want to look for multiple buffs at once, you need to make sure to name the sets in the order you put the buffs in this table
@@ -118,19 +118,27 @@ _L['Buff-Cancels'] =
 {
 
 };
+--------------------------------------------------------------------------------------------------------------------------------------------------->
+-- this table is written like the one above it but will cancel a job ability or spell from going off if said buff is active
+_L['Buff-To-Prevent-Spell'] = 
+{
 
+
+};
+---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- table for weather/day stuff
--- assumes you have a set that is called sets['Weather-Override'] = { };
+-- assumes you have a set that is called sets['Weather-Overrides'] = { };
 -- can use a specific element set too if you don't want to use all-in-one obi
 -- will read this from spell['element']
--- i.e. sets['Weather-Override']['Light'] = { waist = 'Korin Obi' };
+-- i.e. sets['Weather-Overrides']['Light'] = { waist = 'Korin Obi' };
 -- table key should be the 'spell['skill']' as the key, and true/false as value
 -- table can also have key of a specific action, or spell['name'], with true/false as value
 -- i.e. ['Healing Magic'] = true
--- i.e. ['Leaden Salute'] = true
+-- i.e. ['Trueflight'] = true
 -- this let's you set all of a skill to use the obi, but exclude certain actions
 -- this is in a fifo order, so if you want an to exlcude a single action, but include all others of that skill, the action name should be above the skill
 -- this only is looked for in midcast
+
 _L['Weather-Overrides'] =
 {
 	['Trueflight'] = true,
@@ -143,33 +151,40 @@ _L['Weather-Overrides'] =
 -- the key to the table, i.e. the buff name, MUST match the casing of the buffactive table
 -- CASE SENSITIVE
 -- i.e. ['Doom'] = { ['Idle'] = true, ['Engaged'] = true, ['set_name'] = 'Doom' }
--- sets should be prefixed with sets['Status-Override'][set_name];
+-- sets should be prefixed with sets['Status-Overrides'][set_name];
 -- i.e. sets['Status-Overrides']['Doom'] = { };
 -- this will also go in priority in a fifo order
 -- this is only looked for in status_change and aftercast
 _L['Status-Debuff-Overrides'] = 
 {
-		['Doom'] = { Idle = true, Engaged = true, set_name = 'Doom' },
-		['Sleep'] = { Idle = false, Engaged = true, set_name = 'Sleep' },
-		['Terror'] = { Idle = true, Engaged = true, set_name = 'Terror' },
-		['Petrification'] = { Idle = true, Engaged = true, set_name = 'Petrification' },
-		['Stun'] = { Idle = true, Engaged = true, set_name = 'Stun' },
+	['Doom'] = { Idle = true, Engaged = true, set_name = 'Doom' },
+	['Sleep'] = { Idle = false, Engaged = true, set_name = 'Sleep' },
+	['Terror'] = { Idle = true, Engaged = true, set_name = 'Terror' },
+	['Petrification'] = { Idle = true, Engaged = true, set_name = 'Petrification' },
+	['Stun'] = { Idle = true, Engaged = true, set_name = 'Stun' },
 };
 
 
-
-local text_display = text.new();
-	text_display:font("Cambria");
-	text_display:size(16);
-	text_display:color (255,0,0);
-	text_display:pos(1250,925);
-	text_display:text(string.format('Idle: %s\nEngaged: \\cs(0, 255, 0)%s\\cr\nWeapon: %s\nRanged: %s\nMelee: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L['Melee_Weapon_index'],_L['Flurry_Visual']));
-	text_display:show();
-	
 -- local table that holds which statues we want to have it call status_change
 -- we don't want it to call it when our status is event or locked or other
 -- these should be lower case and we'll do a string.lower() on player['status'] to keep it future proof
 _L['valid_statuses'] = T{ 'idle', 'engaged', 'resting' };
+
+	-- set pos for on screen texts
+--------------------------------------------------------------------------------------------------------------------------------------------------->
+local text_display = text.new();
+	text_display:font("Cambria");
+	text_display:size(16);
+	text_display:color (255,0,0);
+	text_display:pos(1250,950);
+	text_display:text(string.format('Idle: %s\nEngaged: \\cs(0, 255, 0)%s\\cr\nWeapon: %s\nRanged: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L_Flurry_Visual));
+	text_display:show();
+	
+	
+	-- overlay of idle index for color changing
+
+	
+---------------------------------------------------------------------------------------------------------------------------------------------------<
 
 -- holds when the last time we called status change, so we can delay it, which hopefully helps lag issues in instance zones
 _L['last_status_change_call'] = os.time();
@@ -178,47 +193,46 @@ _L['last_status_change_call'] = os.time();
 -- default 2.5 because that is gcd
 _L['status_change_delay'] = 2.5;
 
--- flag to allow gear auto equip via player sync packet
-_L['autoupdate'] = true;
+
 
 
 -- Called once on load. Used to define variables, and specifically sets
 function get_sets()
 windower.send_command('input //gs org')
-	-- sets are named in a very specific way to allow the generic rules/logic. 
-	-- the ENTIRE file is controlled by naming the sets correctly. 
-	-- this allows for the ability to make a file from scratch, or add new sets/functionality quite quickly.
-	-- gearswap/windower is very case specific. Please be aware of this when making sets.
+	windower.send_command('input /lockstyleset 4')
+	-- Sets are named in a very specific way to allow generic rules. The entire gearswap is controlled by the naming convention of the sets. 
+	-- This allows us to easily add in additional weapons, weapon skills, job abilities etc without needing to add new logic for equip swaps.
+	-- All that needs to be done is have the sets named correctly. 
+	-- Gearswap is dumb and capitialization in certain places does matter. Look at examples to figure out where it does and doesn't.
 
-	-- sets are split up into three main sections
-	-- 1: status sets. status being idle, engaged, resting, etc
-	-- 2: actions that only have a precast (i.e. weapon skills, jas)
-	-- 3: actions that have a pre and midcast (i.e. spells, ranged attack, etc)
+	-- Sets will generally follow this naming structure:
+	-- For 'status' sets:
+	-- sets['Status']['Weapon_index']['Idle_index'] = { };
+	-- i.e. sets['Idle']['Ragnarok']['pdt'] = { };
+	-- i.e. sets['Engaged']['Ukonvasara']['high-acc'] = { };
 
-	-- sets need to be named with certain things in a certain order. first, to address status or weapon modes
+	-- For non-magic action sets:
+	-- sets['ActionType']['ActionName']['Weapon_Index'] = { };
+	-- i.e. sets['WeaponSkill']['Resolution']['Ragnarok'] = { };
+	-- i.e. sets['JobAbility']['Berserk']['Ukonvasara'] = { };
 
-	-- for status sets:
-	-- sets[status][status_index][weapon_index]
+	-- For magic actions we just add the 'when' at the begining and change ActionType to SpellType
+	-- sets['when']['SpellType']['SpellName']['WeaponIndex'] = { };
+	-- i.e. sets['precast']['Ninjutsu']['Utsusemi: Ni']['Ragnarok'] = { };
+	-- i.e. sets['midcast']['Blue Magic']['Head Butt']['Ragnarok'] = { };
 
-	-- for actions that do not require you to specify precast or midcast (but you still technically can):
-	-- sets[ActionType][ActionName][weapon_index]
+	-- Any given [''] can be left out for simplification. If you want to use the same set for Berserk no matter the weapon, you can just have the set:
+	-- sets['JobAbility']['Berserk'] = { };
+	-- If you want the same set for all midcast Ninjutsu:
+	-- sets['midcast']['Ninjutsu'] = { };
+	-- All precast to use the same set
+	-- sets['precast'] = { };
+	-- Any of them can be missing, not just the final ones. For status changes, you could exclude the weapon index if you had the same idle dt set for every weapon
+	-- sets['Idle']['dt'] = { };
 
-	-- for actions that do require you to specify precast or midcast
-	-- sets[precast|midcast][ActionType][ActionName][weapon_index]
-
-	-- following those options, depending on if it's precast, midcast, or looking for idle/engaged gear, a few overrides can happen
-	-- you do not need to supply all of the options. if you don't use different weapon modes, don't worry about putting the same one for every set
-	-- each of the tables/options above have comments, and they each specify when those overrides can happen
-	-- they should appear in the order that they do in the file
-	-- i.e. Aftermath overrides comes before buff overrides. This doesn't mean you NEED to do an aftermath override, just that if you are, it has to come before bufs
-	-- sets[status][status_index][weapon_index][aftermath_override]
-	-- sets[status][status_index][weapon_index][aftermath_override][buff_override]
-
-	-- order is AFTERMATH -> BUFFS -> TIME
-
-	-- there is also two other overrides, but you don't concat them onto the sets
-	-- status overrides and weather overrides have their own sets. 
-	-- see comments above to learn how to use these sets
+	-- As with all gearswap sets, you do need to initalize the table for each index you use. 
+	-- i.e. you can't create a set for sets['Idle']['Ragnarok'] = { }; without first defining a sets['Idle'] = { };
+	--Resting Sets--
 	organizer_items = {
 		echos="Remedys",
 			shihei="Shihei",
@@ -249,81 +263,53 @@ windower.send_command('input //gs org')
 					back={ name="Belenus's Cape", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},		
 								}
 	sets['DT'] = sets['Normal']
-	
-	
-	sets['MeleeRanged'] = {main="Kustawi +1",sub='Nusku Shield', }
-	sets['MeleeMelee'] = {main="Naegling",sub='Blurred Knife +1', }
-	sets['MeleeMagic'] = {main="Malevolence",sub='Malevolence', }
-	
 	sets['Idle'] = {};
 	
 	sets['Idle']['Gastraphetes'] = {
+								main="Malevolence",
+								sub='Malevolence',
 								range="Gastraphetes",
 								ammo="Quelling Bolt",
 								}
 	sets['Idle']['Gastraphetes']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Gastraphetes'] ,{})
-	sets['Idle']['Gastraphetes']['Normal']['MRanged'] = set_combine(sets['Normal'],sets['Idle']['Gastraphetes'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Gastraphetes']['Normal']['MMelee'] = set_combine(sets['Normal'],sets['Idle']['Gastraphetes'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Gastraphetes']['Normal']['MMagic'] = set_combine(sets['Normal'],sets['Idle']['Gastraphetes'] ,sets['MeleeMagic'],{})
-	
-	
 	sets['Idle']['Gastraphetes']['DT'] = set_combine(sets['DT'],sets['Idle']['Gastraphetes'] ,{})
-	sets['Idle']['Gastraphetes']['DT']['MRanged'] = set_combine(sets['DT'],sets['Idle']['Gastraphetes'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Gastraphetes']['DT']['MMelee'] = set_combine(sets['DT'],sets['Idle']['Gastraphetes'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Gastraphetes']['DT']['MMagic'] = set_combine(sets['DT'],sets['Idle']['Gastraphetes'] ,sets['MeleeMagic'],{})
 	
 	sets['Idle']['Fomalhaut'] = {
+								main="Kustawi +1",
+								sub='Nusku Shield',
 								range="Fomalhaut",
 								ammo="Chrono Bullet",
 								}
 	sets['Idle']['Fomalhaut']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Fomalhaut'] ,{})
-	sets['Idle']['Fomalhaut']['Normal']['MRanged'] = set_combine(sets['Normal'],sets['Idle']['Fomalhaut'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Fomalhaut']['Normal']['MMelee'] = set_combine(sets['Normal'],sets['Idle']['Fomalhaut'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Fomalhaut']['Normal']['MMagic'] = set_combine(sets['Normal'],sets['Idle']['Fomalhaut'] ,sets['MeleeMagic'],{})
-	
 	sets['Idle']['Fomalhaut']['DT'] = set_combine(sets['DT'],sets['Idle']['Fomalhaut'] ,{})
-	sets['Idle']['Fomalhaut']['DT']['MRanged'] = set_combine(sets['DT'],sets['Idle']['Fomalhaut'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Fomalhaut']['DT']['MMelee'] = set_combine(sets['DT'],sets['Idle']['Fomalhaut'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Fomalhaut']['DT']['MMagic'] = set_combine(sets['DT'],sets['Idle']['Fomalhaut'] ,sets['MeleeMagic'],{})
-	
 	
 	sets['Idle']['Armageddon'] = {
+								main="Kustawi +1",
+								sub='Nusku Shield',
 								range="Armageddon",
 								ammo="Chrono Bullet",
 								}
 	sets['Idle']['Armageddon']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Armageddon'] ,{})
-	sets['Idle']['Armageddon']['Normal']['MRanged'] = set_combine(sets['Normal'],sets['Idle']['Armageddon'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Armageddon']['Normal']['MMelee'] = set_combine(sets['Normal'],sets['Idle']['Armageddon'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Armageddon']['Normal']['MMagic'] = set_combine(sets['Normal'],sets['Idle']['Armageddon'] ,sets['MeleeMagic'],{})
-	
 	sets['Idle']['Armageddon']['DT'] = set_combine(sets['DT'],sets['Idle']['Armageddon'] ,{})
-	sets['Idle']['Armageddon']['DT']['MRanged'] = set_combine(sets['DT'],sets['Idle']['Armageddon'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Armageddon']['DT']['MMelee'] = set_combine(sets['DT'],sets['Idle']['Armageddon'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Armageddon']['DT']['MMagic'] = set_combine(sets['DT'],sets['Idle']['Armageddon'] ,sets['MeleeMagic'],{})
-	
 	
 	sets['Idle']['Ataktos'] = {
+								main="Naegling",
+								sub='Blurred Knife +1',
 								range="Ataktos",
 								ammo="Chrono Bullet",
 								}
 	sets['Idle']['Ataktos']['Normal'] = set_combine(sets['Normal'],sets['Idle']['Ataktos'] ,{})
-	sets['Idle']['Ataktos']['Normal']['MRanged'] = set_combine(sets['Normal'],sets['Idle']['Ataktos'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Ataktos']['Normal']['MMelee'] = set_combine(sets['Normal'],sets['Idle']['Ataktos'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Ataktos']['Normal']['MMagic'] = set_combine(sets['Normal'],sets['Idle']['Ataktos'] ,sets['MeleeMagic'],{})
-	
 	sets['Idle']['Ataktos']['DT'] = set_combine(sets['DT'],sets['Idle']['Ataktos'] ,{})
-	sets['Idle']['Ataktos']['DT']['MRanged'] = set_combine(sets['DT'],sets['Idle']['Ataktos'] ,sets['MeleeRanged'],{})
-	sets['Idle']['Ataktos']['DT']['MMelee'] = set_combine(sets['DT'],sets['Idle']['Ataktos'] ,sets['MeleeMelee'],{})
-	sets['Idle']['Ataktos']['DT']['MMagic'] = set_combine(sets['DT'],sets['Idle']['Ataktos'] ,sets['MeleeMagic'],{})
 	
+	--Engaged Sets--
 	
 	sets['Engaged'] = {};
 	
 
 	sets['Engaged']['Gastraphetes'] = {}
-	
-	
-	sets['Engaged']['Gastraphetes']['Normal'] = {
+	sets['Engaged']['Gastraphetes']['Normal'] = {	
+								main="Malevolence",
+								sub='Malevolence',
 								range="Gastraphetes",
 								ammo="Quelling Bolt",
 								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
@@ -334,19 +320,12 @@ windower.send_command('input //gs org')
 								neck="Clotharius Torque",
 								waist="Patentia Sash",
 								left_ear="Telos Earring",
-								right_ear="Beyla Earring",
+								right_ear="Cessance Earring",
 								left_ring="Petrov Ring",
 								right_ring="Epona's Ring",
 								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								
 								};
-	sets['Engaged']['Gastraphetes']['MeleeRanged'] = {}
-	sets['Engaged']['Gastraphetes']['MeleeMelee'] = {}
-	sets['Engaged']['Gastraphetes']['MeleeMagic'] = {}
-	sets['Engaged']['Gastraphetes']['MeleeRanged']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],sets['MeleeRanged'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMelee']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],sets['MeleeMelee'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMagic']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],sets['MeleeMagic'],{})
-						
-						
 						
 									
 	
@@ -363,14 +342,11 @@ windower.send_command('input //gs org')
 								neck="Clotharius Torque",
 								waist="Patentia Sash",
 								left_ear="Telos Earring",
-								right_ear="Beyla Earring",
+								right_ear="Cessance Earring",
 								left_ring="Regal Ring",
 								right_ring="Ramuh Ring +1",
 								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
 								};
-	sets['Engaged']['Gastraphetes']['MeleeRanged']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],sets['MeleeRanged'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMelee']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],sets['MeleeMelee'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMagic']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],sets['MeleeMagic'],{})							
 	
 	sets['Engaged']['Gastraphetes']['Hybrid'] = {				
 								main="Malevolence",
@@ -385,17 +361,12 @@ windower.send_command('input //gs org')
 								neck="Loricate Torque +1",
 								waist="Patentia Sash",
 								left_ear="Telos Earring",
-								right_ear="Beyla Earring",
+								right_ear="Cessance Earring",
 								left_ring="Defending Ring",
 								right_ring="Epona's Ring",
 								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
 								};
-	sets['Engaged']['Gastraphetes']['MeleeRanged']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],sets['MeleeRanged'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMelee']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],sets['MeleeMelee'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMagic']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],sets['MeleeMagic'],{})	
-
-
-	
+								
 	sets['Engaged']['Gastraphetes']['DT'] = {					
 								main="Malevolence",
 								sub='Malevolence',
@@ -414,137 +385,247 @@ windower.send_command('input //gs org')
 								right_ring={ name="Dark Ring", augments={'Magic dmg. taken -4%','Breath dmg. taken -4%','Phys. dmg. taken -3%',}},
 								back={ name="Camulus's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},
 								};
-	sets['Engaged']['Gastraphetes']['MeleeRanged']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],sets['MeleeRanged'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMelee']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],sets['MeleeMelee'],{})
-	sets['Engaged']['Gastraphetes']['MeleeMagic']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],sets['MeleeMagic'],{})
-
-
-
-
-
-
-
+	
 
 	sets['Engaged']['Fomalhaut'] = {}
+
+	sets['Engaged']['Fomalhaut']['Normal'] = {	
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Fomalhaut",
+								ammo="Chrono Bullet",
+								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								legs={ name="Samnuha Tights", augments={'STR+10','DEX+10','"Dbl.Atk."+3','"Triple Atk."+3',}},
+								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
+								neck="Clotharius Torque",
+								waist="Kentarch Belt +1",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Petrov Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
+												
 	
-	
-	sets['Engaged']['Fomalhaut']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],{range="Fomalhaut",ammo="Chrono Bullet",})
+						
 								
-	sets['Engaged']['Fomalhaut']['MeleeRanged'] = {}
-	sets['Engaged']['Fomalhaut']['MeleeMelee'] = {}
-	sets['Engaged']['Fomalhaut']['MeleeMagic'] = {}
-	sets['Engaged']['Fomalhaut']['MeleeRanged']['Normal'] = set_combine(sets['Engaged']['Fomalhaut']['Normal'],sets['MeleeRanged'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMelee']['Normal'] = set_combine(sets['Engaged']['Fomalhaut']['Normal'],sets['MeleeMelee'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMagic']['Normal'] = set_combine(sets['Engaged']['Fomalhaut']['Normal'],sets['MeleeMagic'],{})
-						
-						
-						
-									
 	
-	sets['Engaged']['Fomalhaut']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],{range="Fomalhaut",ammo="Chrono Bullet",})
-	sets['Engaged']['Fomalhaut']['MeleeRanged']['Accuracy'] = set_combine(sets['Engaged']['Fomalhaut']['Accuracy'],sets['MeleeRanged'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMelee']['Accuracy'] = set_combine(sets['Engaged']['Fomalhaut']['Accuracy'],sets['MeleeMelee'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMagic']['Accuracy'] = set_combine(sets['Engaged']['Fomalhaut']['Accuracy'],sets['MeleeMagic'],{})							
+	sets['Engaged']['Fomalhaut']['Accuracy'] = {					
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Fomalhaut",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Clotharius Torque",
+								waist="Kentarch Belt +1",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Regal Ring",
+								right_ring="Ramuh Ring +1",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
 	
-	sets['Engaged']['Fomalhaut']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],{range="Fomalhaut",ammo="Chrono Bullet",})
-	sets['Engaged']['Fomalhaut']['MeleeRanged']['Hybrid'] = set_combine(sets['Engaged']['Fomalhaut']['Hybrid'],sets['MeleeRanged'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMelee']['Hybrid'] = set_combine(sets['Engaged']['Fomalhaut']['Hybrid'],sets['MeleeMelee'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMagic']['Hybrid'] = set_combine(sets['Engaged']['Fomalhaut']['Hybrid'],sets['MeleeMagic'],{})	
-
-
-	
-	sets['Engaged']['Fomalhaut']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],{range="Fomalhaut",ammo="Chrono Bullet",})
-	sets['Engaged']['Fomalhaut']['MeleeRanged']['DT'] = set_combine(sets['Engaged']['Fomalhaut']['DT'],sets['MeleeRanged'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMelee']['DT'] = set_combine(sets['Engaged']['Fomalhaut']['DT'],sets['MeleeMelee'],{})
-	sets['Engaged']['Fomalhaut']['MeleeMagic']['DT'] = set_combine(sets['Engaged']['Fomalhaut']['DT'],sets['MeleeMagic'],{})
-
-
-
-
-
-
-	sets['Engaged']['Ataktos'] = {}
-	
-	
-	sets['Engaged']['Ataktos']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],{range="Ataktos",ammo="Chrono Bullet",})
-	sets['Engaged']['Ataktos']['MeleeRanged'] = {}
-	sets['Engaged']['Ataktos']['MeleeMelee'] = {}
-	sets['Engaged']['Ataktos']['MeleeMagic'] = {}
-	sets['Engaged']['Ataktos']['MeleeRanged']['Normal'] = set_combine(sets['Engaged']['Ataktos']['Normal'],sets['MeleeRanged'],{})
-	sets['Engaged']['Ataktos']['MeleeMelee']['Normal'] = set_combine(sets['Engaged']['Ataktos']['Normal'],sets['MeleeMelee'],{})
-	sets['Engaged']['Ataktos']['MeleeMagic']['Normal'] = set_combine(sets['Engaged']['Ataktos']['Normal'],sets['MeleeMagic'],{})
-						
-						
-						
-									
-	
-	sets['Engaged']['Ataktos']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],{range="Ataktos",ammo="Chrono Bullet",})
-	sets['Engaged']['Ataktos']['MeleeRanged']['Accuracy'] = set_combine(sets['Engaged']['Ataktos']['Accuracy'],sets['MeleeRanged'],{})
-	sets['Engaged']['Ataktos']['MeleeMelee']['Accuracy'] = set_combine(sets['Engaged']['Ataktos']['Accuracy'],sets['MeleeMelee'],{})
-	sets['Engaged']['Ataktos']['MeleeMagic']['Accuracy'] = set_combine(sets['Engaged']['Ataktos']['Accuracy'],sets['MeleeMagic'],{})							
-	
-	sets['Engaged']['Ataktos']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],{range="Ataktos",ammo="Chrono Bullet",})
-	sets['Engaged']['Ataktos']['MeleeRanged']['Hybrid'] = set_combine(sets['Engaged']['Ataktos']['Hybrid'],sets['MeleeRanged'],{})
-	sets['Engaged']['Ataktos']['MeleeMelee']['Hybrid'] = set_combine(sets['Engaged']['Ataktos']['Hybrid'],sets['MeleeMelee'],{})
-	sets['Engaged']['Ataktos']['MeleeMagic']['Hybrid'] = set_combine(sets['Engaged']['Ataktos']['Hybrid'],sets['MeleeMagic'],{})	
-
-
-	
-	sets['Engaged']['Ataktos']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],{range="Ataktos",ammo="Chrono Bullet",})
-	sets['Engaged']['Ataktos']['MeleeRanged']['DT'] = set_combine(sets['Engaged']['Ataktos']['DT'],sets['MeleeRanged'],{})
-	sets['Engaged']['Ataktos']['MeleeMelee']['DT'] = set_combine(sets['Engaged']['Ataktos']['DT'],sets['MeleeMelee'],{})
-	sets['Engaged']['Ataktos']['MeleeMagic']['DT'] = set_combine(sets['Engaged']['Ataktos']['DT'],sets['MeleeMagic'],{})
-
-
-
-
-
-
+	sets['Engaged']['Fomalhaut']['Hybrid'] = {						
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Fomalhaut",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Kentarch Belt +1",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Defending Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
+								
+	sets['Engaged']['Fomalhaut']['DT'] = {						
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Fomalhaut",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Flume Belt +1",
+								left_ear="Genmei Earring",
+								right_ear="Etiolation Earring",
+								left_ring="Defending Ring",
+								right_ring={ name="Dark Ring", augments={'Magic dmg. taken -4%','Breath dmg. taken -4%','Phys. dmg. taken -3%',}},
+								back={ name="Camulus's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},
+								};
 	sets['Engaged']['Armageddon'] = {}
-	
-	
-	sets['Engaged']['Armageddon']['Normal'] = set_combine(sets['Engaged']['Gastraphetes']['Normal'],{range="Armageddon",ammo="Chrono Bullet",})
-	sets['Engaged']['Armageddon']['MeleeRanged'] = {}
-	sets['Engaged']['Armageddon']['MeleeMelee'] = {}
-	sets['Engaged']['Armageddon']['MeleeMagic'] = {}
-	sets['Engaged']['Armageddon']['MeleeRanged']['Normal'] = set_combine(sets['Engaged']['Armageddon']['Normal'],sets['MeleeRanged'],{})
-	sets['Engaged']['Armageddon']['MeleeMelee']['Normal'] = set_combine(sets['Engaged']['Armageddon']['Normal'],sets['MeleeMelee'],{})
-	sets['Engaged']['Armageddon']['MeleeMagic']['Normal'] = set_combine(sets['Engaged']['Armageddon']['Normal'],sets['MeleeMagic'],{})
-						
-						
-						
+	sets['Engaged']['Armageddon']['Normal'] = {	
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Armageddon",
+								ammo="Chrono Bullet",
+								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								legs={ name="Samnuha Tights", augments={'STR+10','DEX+10','"Dbl.Atk."+3','"Triple Atk."+3',}},
+								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
+								neck="Clotharius Torque",
+								waist="Kentarch Belt +1",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Petrov Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};						
 									
 	
-	sets['Engaged']['Armageddon']['Accuracy'] = set_combine(sets['Engaged']['Gastraphetes']['Accuracy'],{range="Armageddon",ammo="Chrono Bullet",})
-	sets['Engaged']['Armageddon']['MeleeRanged']['Accuracy'] = set_combine(sets['Engaged']['Armageddon']['Accuracy'],sets['MeleeRanged'],{})
-	sets['Engaged']['Armageddon']['MeleeMelee']['Accuracy'] = set_combine(sets['Engaged']['Armageddon']['Accuracy'],sets['MeleeMelee'],{})
-	sets['Engaged']['Armageddon']['MeleeMagic']['Accuracy'] = set_combine(sets['Engaged']['Armageddon']['Accuracy'],sets['MeleeMagic'],{})							
+	sets['Engaged']['Armageddon']['Accuracy'] = {						
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Armageddon",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Clotharius Torque",
+								waist="Kentarch Belt +1",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Regal Ring",
+								right_ring="Ramuh Ring +1",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
 	
-	sets['Engaged']['Armageddon']['Hybrid'] = set_combine(sets['Engaged']['Gastraphetes']['Hybrid'],{range="Armageddon",ammo="Chrono Bullet",})
-	sets['Engaged']['Armageddon']['MeleeRanged']['Hybrid'] = set_combine(sets['Engaged']['Armageddon']['Hybrid'],sets['MeleeRanged'],{})
-	sets['Engaged']['Armageddon']['MeleeMelee']['Hybrid'] = set_combine(sets['Engaged']['Armageddon']['Hybrid'],sets['MeleeMelee'],{})
-	sets['Engaged']['Armageddon']['MeleeMagic']['Hybrid'] = set_combine(sets['Engaged']['Armageddon']['Hybrid'],sets['MeleeMagic'],{})	
-
-
+	sets['Engaged']['Armageddon']['Hybrid'] = {				
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Armageddon",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Patentia Sash",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Defending Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
+								
+	sets['Engaged']['Armageddon']['DT'] = {					
+								main="Kustawi +1",
+								sub='Nusku Shield',
+								range="Armageddon",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Flume Belt +1",
+								left_ear="Genmei Earring",
+								right_ear="Etiolation Earring",
+								left_ring="Defending Ring",
+								right_ring={ name="Dark Ring", augments={'Magic dmg. taken -4%','Breath dmg. taken -4%','Phys. dmg. taken -3%',}},
+								back={ name="Camulus's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},
+								};							
+	sets['Engaged']['Ataktos'] = {};
+	sets['Engaged']['Ataktos']['Normal'] = {	
+								main="Naegling",
+								sub='Blurred Knife +1',
+								range="Ataktos",
+								ammo="Chrono Bullet",
+								head={ name="Adhemar Bonnet +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								body={ name="Adhemar Jacket +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								hands={ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}},
+								legs={ name="Samnuha Tights", augments={'STR+10','DEX+10','"Dbl.Atk."+3','"Triple Atk."+3',}},
+								feet={ name="Herculean Boots", augments={'"Triple Atk."+4','DEX+9','Accuracy+15','Attack+14',}},
+								neck="Clotharius Torque",
+								waist="Patentia Sash",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Petrov Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
 	
-	sets['Engaged']['Armageddon']['DT'] = set_combine(sets['Engaged']['Gastraphetes']['DT'],{range="Armageddon",ammo="Chrono Bullet",})
-	sets['Engaged']['Armageddon']['MeleeRanged']['DT'] = set_combine(sets['Engaged']['Armageddon']['DT'],sets['MeleeRanged'],{})
-	sets['Engaged']['Armageddon']['MeleeMelee']['DT'] = set_combine(sets['Engaged']['Armageddon']['DT'],sets['MeleeMelee'],{})
-	sets['Engaged']['Armageddon']['MeleeMagic']['DT'] = set_combine(sets['Engaged']['Armageddon']['DT'],sets['MeleeMagic'],{})
-
-
-
-
-
-
-
+	sets['Engaged']['Ataktos']['Accuracy'] = {						
+								main="Naegling",
+								sub='Blurred Knife +1',
+								range="Ataktos",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Clotharius Torque",
+								waist="Patentia Sash",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Regal Ring",
+								right_ring="Ramuh Ring +1",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
+	
+	sets['Engaged']['Ataktos']['Hybrid'] = {						
+								main="Naegling",
+								sub='Blurred Knife +1',
+								range="Ataktos",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Patentia Sash",
+								left_ear="Telos Earring",
+								right_ear="Cessance Earring",
+								left_ring="Defending Ring",
+								right_ring="Epona's Ring",
+								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
+								};
+								
+	sets['Engaged']['Ataktos']['DT'] = {							
+								main="Naegling",
+								sub='Blurred Knife +1',
+								range="Ataktos",
+								ammo="Chrono Bullet",
+								head="Malignance Chapeau",
+								body="Malignance Tabard",
+								hands="Malignance Gloves",
+								legs="Malignance Tights",
+								feet="Malignance Boots",
+								neck="Loricate Torque +1",
+								waist="Flume Belt +1",
+								left_ear="Genmei Earring",
+								right_ear="Etiolation Earring",
+								left_ring="Defending Ring",
+								right_ring={ name="Dark Ring", augments={'Magic dmg. taken -4%','Breath dmg. taken -4%','Phys. dmg. taken -3%',}},
+								back={ name="Camulus's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},
+								};							
 	
 	
 	
-	
-	
-	
-	
+	--Weaponskill Sets--
+
 	sets['WeaponSkill'] = {
 							
 								};
@@ -633,6 +714,11 @@ windower.send_command('input //gs org')
 								right_ring={ name="Dark Ring", augments={'Magic dmg. taken -4%','Breath dmg. taken -4%','Phys. dmg. taken -3%',}},
 								back={ name="Belenus's Cape", augments={'DEX+20','Accuracy+20 Attack+20','DEX+10','"Dbl.Atk."+10','Phys. dmg. taken-10%',}},
 								};
+	
+	
+	
+	
+							
 	--Job Abilities--
 	
 	sets['JobAbility'] = {};
@@ -681,6 +767,7 @@ windower.send_command('input //gs org')
 							right_ring="Weather. Ring +1",
 							back={ name="Camulus's Mantle", augments={'VIT+20','Eva.+20 /Mag. Eva.+20','"Fast Cast"+10','Damage taken-5%',}},
 							}
+	
 	sets['precast']['Ranged'] = {};
 	sets['precast']['Ranged']['f0'] = {
 							head="Taeon chapeau",
@@ -724,13 +811,65 @@ windower.send_command('input //gs org')
 							left_ring="Regal Ring",
 							right_ring="Dinger Ring",
 							});
-							
+	
+	sets['precast']['Ranged']['Gastraphetes'] = {};
+	sets['precast']['Ranged']['Gastraphetes']['f0'] = {
+							head="Taeon Chapeau",
+							body="Arc. Jerkin +3",
+							hands={ name="Carmine Fin. Ga. +1", augments={'Rng.Atk.+20','"Mag.Atk.Bns."+12','"Store TP"+6',}},
+							legs={ name="Adhemar Kecks", augments={'AGI+10','"Rapid Shot"+10','Enmity-5',}},
+							feet="Meg. Jam. +2",
+							back={ name="Belenus's Cape", augments={'"Snapshot"+10',}},
+							waist="Yemaya Belt",
+							neck="Scout's Gorget +2",
+							left_ear="Dedition Earring",
+							right_ear="Telos Earring",
+							left_ring="Regal Ring",
+							right_ring="Dingir Ring",
+								};
+	sets['precast']['Ranged']['Gastraphetes']['f1'] = set_combine(sets['precast']['Ranged']['Gastraphetes']['f0'],{
+							head="Orion Beret +3",
+							body="Arc. Jerkin +3",
+							hands={ name="Carmine Fin. Ga. +1", augments={'Rng.Atk.+20','"Mag.Atk.Bns."+12','"Store TP"+6',}},
+							legs={ name="Adhemar Kecks", augments={'AGI+10','"Rapid Shot"+10','Enmity-5',}},
+							feet="Meg. Jam. +2",
+							back={ name="Belenus's Cape", augments={'"Snapshot"+10',}},
+							waist="Yemaya Belt",
+							neck="Scout's Gorget +2",
+							left_ear="Dedition Earring",
+							right_ear="Telos Earring",
+							left_ring="Regal Ring",
+							right_ring="Dingir Ring",
+							});
+	sets['precast']['Ranged']['Gastraphetes']['f2'] = set_combine(sets['precast']['Ranged']['Gastraphetes']['f0'],{
+							head="Orion Beret +3",
+							body="Arc. Jerkin +3",
+							hands={ name="Carmine Fin. Ga. +1", augments={'Rng.Atk.+20','"Mag.Atk.Bns."+12','"Store TP"+6',}},
+							legs={ name="Adhemar Kecks", augments={'AGI+10','"Rapid Shot"+10','Enmity-5',}},
+							feet={ name="Pursuer's Gaiters", augments={'Rng.Acc.+10','"Rapid Shot"+10','"Recycle"+15',}},
+							back={ name="Belenus's Cape", augments={'"Snapshot"+10',}},
+							waist="Yemaya Belt",
+							neck="Scout's Gorget +2",
+							left_ear="Dedition Earring",
+							right_ear="Telos Earring",
+							left_ring="Regal Ring",
+							right_ring="Dingir Ring",
+							});
+	
+	
+		
+	
 	sets['precast']['Trust'] = set_combine(sets['precast']['Ninjutsu'],{body="Sylvie Unity Shirt", });
 	
 	
-	
-	
-	
+	sets['precast']['Holy Water'] = sets['DT'];
+	-- sets['precast']['Item']['Holy Water'] = {
+								-- ring1="Purity Ring",
+								-- ring2="Saida Ring",
+								-- waist="Gishdubar Sash",
+								-- legs="Shabti Cuisses +1",
+								-- };
+	--Midcast--
 	
 	sets['midcast'] = {};									
 	sets['midcast']['Ranged'] = {};
@@ -867,32 +1006,29 @@ windower.send_command('input //gs org')
 	
 	sets['Orpheus\'s Sash'] = {waist="Orpheus's Sash"};
 	
+	--Buff--
 	
-	
-	
-	
+	-- sets['midcast']['Dark Magic']['Drain III']['Dark Seal'] = set_combine(sets['midcast']['Dark Magic']['Drain III'], {head="Fallen's Burgeonet +1"});
 	
 	--Keybinds--
-	windower.send_command('input /macro book 4; wait 1; input /macro set 1; input /echo [ Job Changed to RNG ]')
+	windower.send_command('input /macro book 5; wait 1; input /macro set 1; input /echo [ Job Changed to RNG ];wait 1;input //exec ranged.txt;input /lockstyleset 4')
 	windower.send_command('bind f10 gs c cycle idle') --toggle idle sets dt/refresh/regen etc--
 	windower.send_command('bind f9 gs c cycle engaged') --tp set swap acc/hybrid/dt etc--	
 	windower.send_command('bind F11  gs c cycle RangedMode') -- Cycles Ranged accuracy level
 	windower.send_command('bind f12 gs c cycle weapon') --weapon swap keybind-- 
-	windower.send_command('bind ^f12 gs c cycle Melee-weapon') --weapon swap keybind-- 
 	windower.send_command('bind !f12 gs c cycle Autoequip') --Toggles auto equip of gear-- 
+	windower.send_command('input /echo [ Job Changed to Corsair ]')  --change to the job your using--
 	windower.send_command('wait 1; input //jc sub DNC') -- changes subjob to DNC
 	windower.send_command('wait 5; input /lockstyleset 4')  -- need to make lockstyle --
-	windower.send_command('input /macro book 4; wait .1; input /macro set 1')  -- changes macro pallet to jerb --
+	windower.send_command('input /macro book 5; wait .1; input /macro set 1')  -- changes macro pallet to jerb --
 	windower.send_command('bind ^home gs c warpring')  --control+home
 	windower.send_command('bind ^end gs c Demring')	--control+end
 	notice('  F10 - Idle Modes')
 	notice('  F9 - Engaged-Modes')
 	notice('  F11 - Ranged-Modes')
-	notice('  F12 - Ranged-Weapon-Modes')
-	notice('  CTRL-F12 - Melee-Weapon-Modes')
+	notice('  F12 - Weapon-Modes')
 	notice('  Alt-F12 - Toggles Auto Equipping of Gear')
 
-	
 end
 function notice(msg, color)
 		if color == nil then
@@ -902,7 +1038,7 @@ function notice(msg, color)
  end
 -- Called when this job file is unloaded (eg: job change)
 function user_unload()
-	enable('main','sub','range','ammo','head','neck','ear1','ear2','body','hands','left_ring','right_ring','back','waist','legs','feet')
+		enable('main','sub','range','ammo','head','neck','ear1','ear2','body','hands','left_ring','right_ring','back','waist','legs','feet')
         windower.send_command('unbind F9')
 		windower.send_command('unbind !F9')
 		windower.send_command('unbind ^F9')
@@ -919,10 +1055,32 @@ function user_unload()
 		windower.send_command('unbind !F12')
         notice('Unbinding Interface.')
 end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	
+function filtered_action(spell)
+		-- if player.equipment.main == "Shining One" then
+			-- if spell.english=="Upheaval" then
+				-- windower.send_command('input /ws "Impulse Drive" <t>')
+			-- elseif 	spell.english=="Fell Cleave" then
+				-- windower.send_command('input /ws "Sonic Thrust" <t>')
+			-- elseif 	spell.english=="Ukko's Fury" then
+				-- windower.send_command('input /ws "Stardiver" <t>')
+			-- end
+		-- end
+		-- if player.equipment.main == "Naegling" then
+			-- if spell.english=="Upheaval" then
+				-- windower.send_command('input /ws "Savage Blade" <t>')
+			-- elseif 	spell.english=="Fell Cleave" then
+				-- windower.send_command('input /ws "Circle Blade" <t>')
+			-- end
+		-- end
+end
+
 function sub_job_change(new,old)
 	status_change()
 end
-function m_gain_buff(buff_id)
+
+ function m_gain_buff(buff_id)
     
 end
 
@@ -930,11 +1088,36 @@ function m_lose_buff(buff_id)
    
     if (buff_id == 265) or (buff_id == 581) then
 		_L_Flurry = "f0"
-		_L['Flurry_Visual'] = "Off"
+		_L_Flurry_Visual = "Off"
     end
-end	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	-- if _L['Engaged_index'] == 'DT' then 
+			-- text_display:text(string.format('Idle: %s\nEngaged: \\cs(255, 0, 0)%s\\cr\nWeapon: %s\nRanged: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L_Flurry_Visual));
+		-- elseif	_L['Engaged_index'] == 'Normal' then 
+			-- text_display:text(string.format('Idle: %s\nEngaged: \\cs(0, 255, 0)%s\\cr\nWeapon: %s\nRanged: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L_Flurry_Visual));
+		-- elseif	_L['Engaged_index'] == 'Accuracy' then 
+			-- text_display:text(string.format('Idle: %s\nEngaged: \\cs(0, 100, 255)%s\\cr\nWeapon: %s\nRanged: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L_Flurry_Visual));
+		-- elseif	_L['Engaged_index'] == 'Hybrid' then 
+			-- text_display:text(string.format('Idle: %s\nEngaged: \\cs(255, 0, 255)%s\\cr\nWeapon: %s\nRanged: %s\nFlurry Level: %s\n'        , _L['Idle_index'],  _L['Engaged_index'], _L['Weapon_index'], _L['Ranged_index'], _L_Flurry_Visual));
+		-- end
+		
+		-- text_display:update();
+
+end
 windower.register_event('gain buff', m_gain_buff);
 windower.register_event('lose buff', m_lose_buff);
+
+
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 -- Passes the new and old statuses
 function status_change(new, old)
 	-- hold which set to equip in a variable and only call equip() once, that way we can pass status overrides too
@@ -961,11 +1144,7 @@ function status_change(new, old)
 			set_to_equip = sets[new];
 		end
 	end
-	
-	if (set_to_equip[_L['Melee_Weapon_index']] ~= nil) then
-		set_to_equip = set_to_equip[_L['Melee_Weapon_index']];
-	end
-	
+
 	-- check for aftermath
 	if (buffactive['Aftermath'] or buffactive['Aftermath: Lv.1'] or buffactive['Aftermath: Lv.2'] or buffactive['Aftermath: Lv.3']) then
 		-- loop through override table
@@ -1029,7 +1208,7 @@ function status_change(new, old)
 
 	-- lastly, check for status overrides, loop through all overrides
 	-- hold this as a variable too
-	local set_override_name;
+	local set_overrides_name;
 	-- checking this last allows us to equip our normal buff sets, and then override 
 	for key, value in pairs(SortTable(_L['Status-Debuff-Overrides'])) do
 		-- check to see if we have the buff active
@@ -1037,19 +1216,20 @@ function status_change(new, old)
 			-- check to see if we want to use the override in the current new status
 			if (_L['Status-Debuff-Overrides'][value][new] ~= nil and _L['Status-Debuff-Overrides'][value][new]) then
 				if (sets['Status-Overrides'] ~= nil and sets['Status-Overrides'][_L['Status-Debuff-Overrides'][value]['set_name']] ~= nil) then
-					set_override_name = sets['Status-Overrides'][_L['Status-Debuff-Overrides'][value]['set_name']];
+					set_overrides_name = sets['Status-Overrides'][_L['Status-Debuff-Overrides'][value]['set_name']];
 				end
 			end
 		end
 	end
 
 	-- if we found an override set, equip that with the normal set
-	if (set_override_name ~= nil) then
-		equip(set_to_equip, set_override_name);
+	if (set_overrides_name ~= nil) then
+		equip(set_to_equip, set_overrides_name);
 	else
 		-- just equip the normal set
 		equip(set_to_equip);
 	end
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
 	
 	if _L['Engaged_index'] == 'DT' then 
         _L['EngagedColor'] = '(255, 0, 0)'
@@ -1071,22 +1251,21 @@ function status_change(new, old)
 		_L['RangedColor'] = '(0, 100, 255)'
 	end
 	
-	if _L['Melee_Weapon_index'] == 'MRanged' then
-		_L['Melee-Weapon_Color'] = '(255, 0, 0)'
-	else
-		_L['Melee-Weapon_Color'] = '(255, 0, 0)'
-	end
-	if _L['Flurry_Visual'] == "Off" then
+	if _L_Flurry_Visual == "Off" then
 		_L['FlurryColor'] = '(255, 0, 0)'
 	else
 		_L['FlurryColor'] = '(0, 255, 0)'
 	end
 	
-	local textcolors = 'Idle: \\cs%s%s\\cr\nEngaged: \\cs%s%s\\cr\nWeapon: %s\nRanged: \\cs%s%s\\cr\nMelee: \\cs%s%s\\cr\nFlurry Level: \\cs%s%s\\cr\n':format(_L['IdleColor'], _L['Idle_index'], _L['EngagedColor'], _L['Engaged_index'], _L['Weapon_index'], _L['RangedColor'], _L['Ranged_index'], _L['Melee-Weapon_Color'], _L['Melee_Weapon_index'], _L['FlurryColor'], _L['Flurry_Visual']);
+	
+	local textcolors = 'Idle: \\cs%s%s\\cr\nEngaged: \\cs%s%s\\cr\nWeapon: %s\nRanged: \\cs%s%s\\cr\nFlurry Level: \\cs%s%s\\cr\n':format(_L['IdleColor'], _L['Idle_index'], _L['EngagedColor'], _L['Engaged_index'], _L['Weapon_index'],_L['RangedColor'], _L['Ranged_index'],_L['FlurryColor'], _L_Flurry_Visual);
 	
 	text_display:text(textcolors)
 	
 		text_display:update();
+	
+		
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 end
 
 -- Passes the resources line for the spell with a few modifications. 
@@ -1094,7 +1273,6 @@ end
 -- cancel_spell(), verify_equip(), force_send(), and cast_delay() are implemented in this phase. 
 -- Does not occur for items that bypass the outgoing text buffer (like using items from the menu)..
 function precast(spell)
-
 	--------------------------------------------------------------------------------------------------------------------------------------------------->
 	-- check to see if debuff is on and cancels spell to stop gear from changing
 	if buffactive['Petrification'] or buffactive['stun'] or buffactive['Terror'] then
@@ -1108,13 +1286,19 @@ function precast(spell)
 		cancel_spell();
 		return
 	end
-	---------------------------------------------------------------------------------------------------------------------------------------------------<
-	-- check to see if the player has the required resources, be it mp or tp, before doing anything else
-	if (player['mp'] < spell['mp_cost'] or player['tp'] < spell['tp_cost'] or (spell['type'] == 'WeaponSkill' and player['tp'] < 1000)) then
-		cancel_spell();
-
-		return;
+	if spell.english == 'Ranged' then
+		-- if player.inventory[player.equipment.ammo].count < 15 then
+			-- add_to_chat(122,"Ammo '"..player.inventory[player.equipment.ammo].shortname.."' running low ("..player.inventory[player.equipment.ammo].count..")")	
+		-- end
+		if player.status == 'Engaged' then
+			if windower.ffxi.get_ability_recasts()[126] < 1 and not buffactive.amnesia and not buffactive.Barrage and not buffactive.Overkill then
+				cancel_spell()
+				windower.send_command('Double Shot')
+				return
+			end	
+		end	
 	end
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 
 	-- check for buff cancels before we even look for sets
 	for key, value in pairs(_L['Buff-Cancels']) do
@@ -1129,7 +1313,64 @@ function precast(spell)
 			end
 		end
 	end
-	
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+	--checks for ja to stop if buff active
+	for key, value in pairs(_L['Buff-To-Prevent-Spell']) do
+		-- check to see if the current spell is one we want to cancel something for
+		if (string.lower(key) == string.lower(spell['name'])) then
+			-- check to see if we have one of the buffs up
+			for buff_id, buff_name in pairs(value) do
+				if (buffactive[buff_name]) then
+					-- send cancel
+					cancel_spell()
+					return
+				end
+			end
+		end
+	end
+	if spell.english == "Ranged" and _L['AllowRanged'] == true then
+		if player.equipment.range == "Gastraphetes" then
+		-- print(_L['Ranged_index'])
+				-- check for Flurry
+			if (_L_Flurry == "f0" or _L_Flurry == "f1" or _L_Flurry == "f2") then
+				if _L_Flurry == "f0" then
+					if (sets['precast']['Ranged']['Gastraphetes']['f0'] ~= nil) then
+						equip(sets['precast']['Ranged']['Gastraphetes']['f0']);
+					end
+				elseif _L_Flurry == "f1" then
+					if (sets['precast']['Ranged']['Gastraphetes']['f1'] ~= nil) then
+						equip(sets['precast']['Ranged']['Gastraphetes']['f1']);
+					end
+				elseif _L_Flurry == "f2" then
+					if (sets['precast']['Ranged']['Gastraphetes']['f2'] ~= nil) then
+						equip(sets['precast']['Ranged']['Gastraphetes']['f2']);
+					end
+				end
+			end
+			
+		else
+				-- check for Flurry
+			if (_L_Flurry == "f0" or _L_Flurry == "f1" or _L_Flurry == "f2") then
+				if _L_Flurry == "f0" then
+					if (sets['precast']['Ranged']['f0'] ~= nil) then
+						equip(sets['precast']['Ranged']['f0']);
+					end
+				elseif _L_Flurry == "f2" then
+					if (sets['precast']['Ranged']['f0'] ~= nil) then
+						equip(sets['precast']['Ranged']['f1']);
+					end
+				elseif _L_Flurry == "f2" then
+					if (sets['precast']['Ranged']['f0'] ~= nil) then
+						equip(sets['precast']['Ranged']['f2']);
+					end
+				end
+			end
+		end	
+		_L['AllowRanged'] = false
+	elseif _L['AllowRanged'] == false then
+		cancel_spell()
+		return
+	end	
 	equip(get_action_set(spell, 'precast'));
 	local weather_set;
 	local O_Belt = false
@@ -1172,34 +1413,9 @@ function precast(spell)
 		equip(action_set);
 		
 	end
+	---------------------------------------------------------------------------------------------------------------------------------------------------<
 	
-	if spell.english == 'Ranged' then
-		-- if player.inventory[player.equipment.ammo].count < 15 then
-			-- add_to_chat(122,"Ammo '"..player.inventory[player.equipment.ammo].shortname.."' running low ("..player.inventory[player.equipment.ammo].count..")")	
-		-- end
-		if player.status == 'Engaged' then
-			if windower.ffxi.get_ability_recasts()[126] < 1 and not buffactive.amnesia and not buffactive.Barrage and not buffactive.Overkill then
-				cancel_spell()
-				windower.send_command('Double Shot')
-				return
-			end	
-		end	
-		if (_L_Flurry == "f0" or _L_Flurry == "f1" or _L_Flurry == "f2") then
-			if _L_Flurry == "f0" then
-				if (sets['precast']['Ranged']['f0'] ~= nil) then
-					equip(sets['precast']['Ranged']['f0']);
-				end
-			elseif _L_Flurry == "f1" then
-				if (sets['precast']['Ranged']['f1'] ~= nil) then
-					equip(sets['precast']['Ranged']['f1']);
-				end
-			elseif _L_Flurry == "f2" then
-				if (sets['precast']['Ranged']['f2'] ~= nil) then
-					equip(sets['precast']['Ranged']['f2']);
-				end
-			end
-		end
-	end
+	
 	
 end
 
@@ -1250,28 +1466,55 @@ function midcast(spell)
 	else
 		equip(action_set);
 	end
+	
+	if spell.english == 'Ranged' then
+		if buffactive['Barrage'] then
+			if (sets['midcast']['Ranged']['Barrage'][_L['Ranged_index']] ~= nil) then
+				equip(sets['midcast']['Ranged']['Barrage'][_L['Ranged_index']]);
+			end
+		elseif buffactive['Overkill'] then
+			if (sets['midcast']['Ranged']['Overkill'][_L['Ranged_index']] ~= nil) then
+				equip(sets['midcast']['Ranged']['Overkill'][_L['Ranged_index']]);
+			end
+		elseif buffactive['Double Shot'] then
+			if (sets['midcast']['Ranged']['Double Shot'][_L['Ranged_index']] ~= nil) then
+				equip(sets['midcast']['Ranged']['Double Shot'][_L['Ranged_index']]);
+			end
+		else
+			equip(sets['midcast']['Ranged'][_L['Ranged_index']]);
+		end
+	end
+	
 end
 
--- Passes the resources line for the spell with a few modifications. Occurs when the “result” action packet is received from the server, 
--- or an interruption of some kind is detected.
+--Passes the resources line for the spell with a few modifications. Occurs when the “result” action packet is received from the server, 
+--or an interruption of some kind is detected.
 function aftercast(spell)
-	if not (midaction() or pet_midaction()) then
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
+		_L['AllowRanged'] = true
+		---------------------------------------------------------------------------------------------------------------------------------------------------<		
+		if not (midaction() or pet_midaction()) then
 		status_change(player['status'], 'casting');
-	end
+		end
 end
 
 -- Passes the resources line for the spell with a few modifications. Occurs when the “readies” action packet is received for your pet
 function pet_midcast(spell)
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
+	-- print('pet move type')
+	-- print(spell['type'])
+	-- print('pet move name')
+	-- print(spell['name'])
+		---------------------------------------------------------------------------------------------------------------------------------------------------<	
 	equip(get_action_set(spell, 'midcast'));
 end
 
 -- Passes the resources line for the spell with a few modifications. Occurs when the “result” action packet is received for your pet.
 function pet_aftercast(spell)
-	--_L['player_casting'] = false;
-
 	status_change(player['status'], 'pet_ability');
+	
+	
 end
-
 -- Passes any self commands, which are triggered by //gs c <command> (or /console gs c <command> in macros)
 function self_command(command)
 	-- This is where we handle set cycles and toggles. These can again be whatever we want as long as things match
@@ -1282,11 +1525,6 @@ function self_command(command)
 	-- //gs c cycle weapon
 	-- or user wants to auto detect weapon and set the weapon index as that
 	-- //gs c auto weapon
-	-- or user wants to force a status change check, which would put on the correct idle/engaged/etc set
-	-- //gs c force status change
-	-- or user wants to set an mode to a specific index
-	-- //gs c set [indexname] [indexvalue]
-	-- i.e. //gs c set Engaged acc
 	if (command == 'cycle Autoequip') then
 		if _L['Autoequip'] == true then
 			_L['Autoequip'] = false
@@ -1299,8 +1537,21 @@ function self_command(command)
 	end
 	
 	
-	
 	if (command == 'cycle idle') then
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
+		if player.status == 'Engaged' then
+			if _L['DT'] == false then
+				CurrentEngaged = _L['Engaged_index']
+				_L['Engaged_index'] = 'DT'
+				_L['DT'] = true
+			elseif _L['DT'] == true then	
+				_L['Engaged_index'] = CurrentEngaged
+				_L['DT'] = false
+				_L['Idle_index'] = _L['Idle-Modes'][1];
+			
+			end
+		else
+		
 		-- get the index of the current idle index
 		local index = IndexOf(_L['Idle-Modes'], _L['Idle_index']);
 		-- make sure it's valid. 
@@ -1317,10 +1568,17 @@ function self_command(command)
 
 		-- set the new index
 		_L['Idle_index'] = _L['Idle-Modes'][index];
+		end
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
 		status_change(player['status'], 'none');
 	elseif (command == 'cycle engaged') then
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
 		_L['DT'] = false
+		
+			
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
+	
 		-- get the index of the current engaged index
 		local index = IndexOf(_L['Engaged-Modes'], _L['Engaged_index']);
 		-- make sure it's valid
@@ -1338,9 +1596,15 @@ function self_command(command)
 		-- set the new index
 		_L['Engaged_index'] = _L['Engaged-Modes'][index];
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
+		--------------------------------------------------------------------------------------------------------------------------------------------------->
+		
+		
+		---------------------------------------------------------------------------------------------------------------------------------------------------<
 		status_change(player['status'], 'none');
 	elseif (command == 'cycle weapon') then
+	--------------------------------------------------------------------------------------------------------------------------------------------------->
 		_L['DT'] = false
+	---------------------------------------------------------------------------------------------------------------------------------------------------<	
 		-- get the index of the current weapon index
 		local index = IndexOf(_L['Weapon-Modes'], _L['Weapon_index']);
 		-- make sure it's valid
@@ -1359,26 +1623,25 @@ function self_command(command)
 		_L['Weapon_index'] = _L['Weapon-Modes'][index];
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
 		status_change(player['status'], 'none');
-	elseif (command == 'cycle Melee-weapon') then
-		_L['DT'] = false
-		-- get the index of the current weapon index
-		local index = IndexOf(_L['Melee-Weapon-Modes'], _L['Melee_Weapon_index']);
-		-- make sure it's valid
+	elseif (command == 'cycle RangedMode') then
+		-- get the index of the current Ranged index
+		local index = IndexOf(_L['Ranged-Modes'], _L['Ranged_index']);
+		-- make sure it's valid. 
 		if (index == -1) then
 			index = 1;
 		end
 
 		-- if it's the last one, set it to 1, else increment
-		if (index == #_L['Melee-Weapon-Modes']) then
+		if (index == #_L['Ranged-Modes']) then
 			index = 1;
 		else
 			index = index + 1;
 		end
 
 		-- set the new index
-		_L['Melee_Weapon_index'] = _L['Melee-Weapon-Modes'][index];
+		_L['Ranged_index'] = _L['Ranged-Modes'][index];
 		-- call status change to make sure our gear changes instantly, since gearswap sucks and doesn't auto parse this.
-		status_change(player['status'], 'none');	
+		status_change(player['status'], 'none');
 	elseif (command == 'auto weapon') then
 		local weapon = player['equipment']['main'];
 		if (weapon ~= nil) then
@@ -1393,22 +1656,7 @@ function self_command(command)
 		end
 	elseif (command == 'force status change') then
 		status_change(player['status'], 'none');
-	elseif (command:startswith('set')) then
-		-- set an index directly rather than cycle
-		-- split the command
-		local args = command:split(' ');
-		-- check to make sure we have the minimum we need
-		if (#args >= 3) then
-			if (_L[string.format('%s-Modes', args[2])] ~= nil) then
-				local index = IndexOf(_L[string.format('%s-Modes', args[2])], args[3]);
-				if (index ~= -1) then
-					_L[string.format('%s_index', args[2])] = _L[string.format('%s-Modes', args[2])][index];
-				end
-			end
-		end
-	elseif (command == 'autoupdate') then
-		_L['autoupdate'] = not _L['autoupdate'];
-	end
+	end 
 	--------------------------------------------------------------------------------------------------------------------------------------------------->
 	--ring locks--
 		if command == 'warpring' then
@@ -1510,27 +1758,37 @@ function get_action_set(spell, actionTime)
 		else
 			set_to_equip = (sets[actionTime]);
 		end
-		
-		if spell.english == 'Ranged' then
-			if buffactive['Barrage'] then
-				if (sets['midcast']['Ranged']['Barrage'][_L['Ranged_index']] ~= nil) then
-					equip(sets['midcast']['Ranged']['Barrage'][_L['Ranged_index']]);
-				end
-			elseif buffactive['Overkill'] then
-				if (sets['midcast']['Ranged']['Overkill'][_L['Ranged_index']] ~= nil) then
-					equip(sets['midcast']['Ranged']['Overkill'][_L['Ranged_index']]);
-				end
-			elseif buffactive['Double Shot'] then
-				if (sets['midcast']['Ranged']['Double Shot'][_L['Ranged_index']] ~= nil) then
-					equip(sets['midcast']['Ranged']['Double Shot'][_L['Ranged_index']]);
-				end
-			else
-				equip(sets['midcast']['Ranged'][_L['Ranged_index']]);
-			end
-			return
+	end ---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+	-- if count >= 40 and not count < 40 then
+			-- HasteNumber = 'HasteHigh'
+		-- if (set_to_equip['HasteHigh'] ~= nil) then
+			-- set_to_equip = set_to_equip['HasteHigh'];
+			
+		-- end
+	-- elseif count >= 25 and not count < 25 then
+		-- HasteNumber = 'HasteMid'
+		-- if (set_to_equip['HasteMid'] ~= nil) then
+			-- set_to_equip = set_to_equip['HasteMid'];
+			
+		-- end
+	-- elseif count < 25 then
+		-- HasteNumber = 'HasteLow'
+		-- if (set_to_equip['HasteLow'] ~= nil) then
+			-- set_to_equip = set_to_equip['HasteLow'];
+			
+		-- end	
+	-- end
+	if buffactive['Samurai Roll'] then
+		if (set_to_equip['SamRollOn'] ~= nil) then
+			set_to_equip = set_to_equip['SamRollOn'];	
+		end
+	else
+		if (set_to_equip['SamRollOff'] ~= nil) then
+			set_to_equip = set_to_equip['SamRollOff'];	
 		end
 	end
-
+	
+	-----------------------------------------------------------------------------------------------------------------------------------------------------------------<
 	-- check for aftermath
 	if (buffactive['Aftermath'] or buffactive['Aftermath: Lv.1'] or buffactive['Aftermath: Lv.2'] or buffactive['Aftermath: Lv.3']) then
 		-- loop through override table
@@ -1556,7 +1814,7 @@ function get_action_set(spell, actionTime)
 	end
 	
 	-- holds weather we are going to override the set we found above with a buff specific set
-	local buff_override = false;
+	local buff_overrides = false;
 	local buff_name = '';
 	
 	-- loop through the overrides
@@ -1571,7 +1829,7 @@ function get_action_set(spell, actionTime)
 					-- check to see if the precast or midcast is what we want
 					--if ((actionTime == 'precast' and value['precast']) or (actionTime == 'midcast' and value['midcast'])) then
 					if (value[actionTime]) then
-						buff_override = true;
+						buff_overrides = true;
 						buff_name = buff:trim();
 						break;
 					end
@@ -1581,7 +1839,7 @@ function get_action_set(spell, actionTime)
 	end
 	
 	-- did we find a buff override and does that set exist?
-	if (buff_override and set_to_equip[buff_name] ~= nil) then
+	if (buff_overrides and set_to_equip[buff_name] ~= nil) then
 		set_to_equip = set_to_equip[buff_name];
 	end
 
@@ -1643,6 +1901,7 @@ function SortTable(t, sf)
 
 	return keys;
 end
+
 function m_action(action)
 			
 	for index,target in pairs(action['targets']) do
@@ -1660,10 +1919,10 @@ function m_action(action)
 			if (action['category'] == 4) then
 				if (action['param'] == 845) then -- flurry
 				   _L_Flurry = "f1";
-				   _L['Flurry_Visual'] = "Flurry 1"
+				   _L_Flurry_Visual = "Flurry 1"
 				elseif (action['param'] == 846) then -- flurry II
 					_L_Flurry = "f2"; -- can make it a 2 and add another snapshot set with more rapid shot	
-					_L['Flurry_Visual'] = "Flurry 2"
+					_L_Flurry_Visual = "Flurry 2"
 				end	
 			end
 		end
